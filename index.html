@@ -1,0 +1,1494 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agenda SNCIC DCI 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+:root{
+  /* APC Colombia institutional palette */
+  --bg:#F0F4F8;--surface:#FFFFFF;--border:#D6DDE6;--border-mid:#B8C4D0;
+  --text:#0A2240;--t2:#4A6080;--t3:#8A9DB0;
+  /* Primary: APC deep blue */
+  --apc-blue:#003F7A;--apc-blue-light:#E8EFF7;
+  /* Accent: GOV.CO gold */
+  --apc-gold:#F5A800;--apc-gold-light:#FEF6E0;
+  /* Topbar */
+  --topbar-bg:#003F7A;--topbar-text:#FFFFFF;
+  /* Line colors - institutional palette */
+  --gov:#003F7A;--gov-bg:#E8EFF7;--gov-t:#002855;
+  --din:#00794A;--din-bg:#E6F4EE;--din-t:#00522F;
+  --col:#5B3FA0;--col-bg:#EEE8F8;--col-t:#3D2870;
+  --ctr:#C17A00;--ctr-bg:#FEF6E0;--ctr-t:#7A4D00;
+  --cup:#4A6080;--cup-bg:#EDF1F6;--cup-t:#2A3F55;
+  --edg:#B5002A;--edg-bg:#F9E6EB;--edg-t:#7A001C;
+  --r8:6px;--r12:10px;
+  --font:'DM Sans',sans-serif;--serif:'DM Serif Display',serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;min-height:100vh}
+button,select,input,textarea{font-family:var(--font)}
+.app{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:52px;background:var(--topbar-bg);border-bottom:none;flex-shrink:0;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+.logo{font-family:var(--serif);font-size:16px;white-space:nowrap;color:var(--topbar-text)}
+.logo em{font-family:var(--font);font-size:13px;font-weight:300;color:rgba(255,255,255,.7);font-style:normal;margin-left:6px}
+.vtabs{display:flex;border:0.5px solid rgba(255,255,255,.25);border-radius:var(--r8);overflow:hidden}
+.vtab{padding:6px 11px;font-size:12px;cursor:pointer;color:rgba(255,255,255,.75);background:transparent;border:none;display:flex;align-items:center;gap:4px;border-right:0.5px solid rgba(255,255,255,.2)}
+.vtab:last-child{border-right:none}
+.vtab.on{background:rgba(255,255,255,.18);color:#fff;font-weight:500}
+.vtab:hover{background:rgba(255,255,255,.1);color:#fff}
+.btn-new{display:flex;align-items:center;gap:6px;padding:7px 14px;font-size:12px;font-weight:500;background:var(--apc-gold);color:#0A2240;border:none;border-radius:var(--r8);cursor:pointer;white-space:nowrap;font-weight:600}
+.btn-new:hover{background:#e09900}
+.btn-xl{display:flex;align-items:center;gap:6px;padding:6px 12px;font-size:11px;font-weight:500;background:#1D6F42;color:#fff;border:none;border-radius:var(--r8);cursor:pointer;white-space:nowrap}
+.btn-xl:hover{background:#155a32}
+/* Main layout */
+.main{display:flex;flex:1;overflow:hidden}
+.sb{width:200px;border-right:0.5px solid var(--border);background:var(--surface);overflow-y:auto;flex-shrink:0;padding:12px;display:flex;flex-direction:column;gap:14px;box-shadow:2px 0 8px rgba(0,0,0,.04)}
+.sec{font-size:10px;color:var(--apc-blue);font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px;border-bottom:1.5px solid var(--apc-gold);padding-bottom:3px;display:inline-block}
+.lg{border:0.5px solid var(--border);border-radius:var(--r8);overflow:hidden;margin-bottom:4px}
+.lh{display:flex;align-items:center;justify-content:space-between;padding:7px 9px;user-select:none;background:var(--surface)}
+.lh:hover{background:var(--bg)}
+.lh-l{display:flex;align-items:center;gap:7px;min-width:0;flex:1;cursor:pointer}
+.lh-r{display:flex;align-items:center;gap:4px;flex-shrink:0;cursor:pointer}
+.ldot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.lname{font-size:11px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lcnt{font-size:10px;background:var(--bg);color:var(--t3);border-radius:20px;padding:1px 6px}
+.lchev{font-size:11px;color:var(--t3);transition:transform .2s;display:inline-block}
+.lchev.open{transform:rotate(180deg)}
+.ll{display:none;border-top:0.5px solid var(--border);background:var(--bg);max-height:200px;overflow-y:auto}
+.ll.open{display:block}
+.li{padding:6px 9px 6px 20px;cursor:pointer;border-bottom:0.5px solid var(--border);font-size:11px;color:var(--text)}
+.li:last-child{border-bottom:none}
+.li:hover{background:var(--surface)}
+.li-row{display:flex;align-items:flex-start;gap:5px}
+.li-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.li-name{line-height:1.35}
+.li-meta{font-size:10px;color:var(--t3);margin-top:2px}
+.spill{font-size:10px;padding:2px 8px;border-radius:20px;cursor:pointer;display:inline-block;border:none}
+.s-real{background:#E6F4EE;color:#00522F;font-weight:500}
+.s-conf{background:var(--apc-blue-light);color:var(--apc-blue);font-weight:500}
+.s-pend{background:var(--apc-gold-light);color:#7A4D00;font-weight:500}
+.fsel{font-size:11px;width:100%;padding:5px 8px;border-radius:var(--r8);border:0.5px solid var(--border);background:var(--surface);color:var(--text)}
+/* Content */
+.cnt{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
+.caltop{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--surface);border-bottom:2px solid var(--apc-gold);flex-shrink:0;gap:8px;flex-wrap:wrap}
+.calnav{display:flex;align-items:center;gap:10px}
+.calmonth{font-family:var(--serif);font-size:16px;color:var(--apc-blue)}
+.navbtn{background:none;border:0.5px solid var(--border);border-radius:var(--r8);padding:4px 9px;cursor:pointer;color:var(--t2);font-size:13px;line-height:1}
+.navbtn:hover{background:var(--apc-blue-light);border-color:var(--apc-blue);color:var(--apc-blue)}
+.modrow{display:flex;gap:5px;align-items:center}
+.mchip{font-size:11px;padding:4px 10px;border-radius:20px;border:0.5px solid var(--border);background:var(--surface);color:var(--t2);cursor:pointer}
+.mchip.on{background:var(--apc-blue);border-color:var(--apc-blue);color:#fff}
+.calscroll{flex:1;overflow-y:auto;padding:12px 14px}
+.whdr{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:4px}
+.wl{font-size:10px;color:var(--t3);text-align:center;padding:2px 0;font-weight:500}
+.calgrid{display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:minmax(72px,90px);gap:3px}
+.cd{border:0.5px solid var(--border);border-radius:6px;padding:4px;background:var(--surface);overflow:hidden}
+.cd.other{background:var(--bg);border-color:transparent}
+.cd.today{border-color:var(--apc-blue);border-width:2px;background:var(--apc-blue-light)}
+.dn{font-size:10px;color:var(--t3);margin-bottom:3px;font-weight:500}
+.cd.today .dn{color:var(--apc-blue);font-weight:700}
+.ec{font-size:10px;padding:2px 5px;border-radius:3px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;display:block}
+.ec:hover{opacity:.75}
+.ec-gov{background:var(--gov-bg);color:var(--gov-t)}
+.ec-din{background:var(--din-bg);color:var(--din-t)}
+.ec-col{background:var(--col-bg);color:var(--col-t)}
+.ec-ctr{background:var(--ctr-bg);color:var(--ctr-t)}
+.ec-cup{background:var(--cup-bg);color:var(--cup-t)}
+.ec-edg{background:var(--edg-bg);color:var(--edg-t)}
+.more{font-size:10px;color:var(--t3);padding:1px 4px;cursor:pointer}
+/* Annual view */
+.annual-scroll{flex:1;overflow-y:auto;padding:16px;background:var(--bg)}
+.annual-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.mini-month{background:var(--surface);border-radius:var(--r8);border:0.5px solid var(--border);padding:12px}
+.mini-month-title{font-family:var(--serif);font-size:13px;margin-bottom:8px;color:var(--apc-blue);font-weight:500;border-bottom:1.5px solid var(--apc-gold);padding-bottom:4px}
+.mini-whdr{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;margin-bottom:3px}
+.mini-wl{font-size:9px;color:var(--t3);text-align:center}
+.mini-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px}
+.mini-cd{min-height:28px;border-radius:3px;padding:2px;font-size:9px;overflow:hidden}
+.mini-cd.other{opacity:.3}
+.mini-cd.today{background:var(--gov-bg)}
+.mini-dn{color:var(--t3);margin-bottom:1px;font-weight:500}
+.mini-cd.today .mini-dn{color:var(--gov)}
+.mini-ec{height:4px;border-radius:2px;margin-bottom:1px;cursor:pointer}
+/* Detail panel */
+.dp{width:240px;border-left:0.5px solid var(--border);background:var(--surface);overflow-y:auto;flex-shrink:0;padding:14px;display:flex;flex-direction:column;gap:12px}
+.ep{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:8px;color:var(--t3);text-align:center}
+.ep i{font-size:28px}
+.ep p{font-size:12px;line-height:1.5}
+.dph{display:flex;align-items:center;justify-content:space-between}
+.dpt{font-size:13px;font-weight:500}
+.xbtn{background:none;border:none;color:rgba(255,255,255,.8);cursor:pointer;font-size:16px;line-height:1}
+.evname{font-size:13px;font-weight:500;line-height:1.4}
+.badge{display:inline-block;font-size:10px;padding:2px 9px;border-radius:20px;margin-top:4px}
+.b-gov{background:var(--gov-bg);color:var(--gov-t)}
+.b-din{background:var(--din-bg);color:var(--din-t)}
+.b-col{background:var(--col-bg);color:var(--col-t)}
+.b-ctr{background:var(--ctr-bg);color:var(--ctr-t)}
+.b-cup{background:var(--cup-bg);color:var(--cup-t)}
+.b-edg{background:var(--edg-bg);color:var(--edg-t)}
+.dlbl{font-size:10px;color:var(--apc-blue);font-weight:600;letter-spacing:.07em;text-transform:uppercase;margin-bottom:4px;border-bottom:1px solid var(--apc-gold);padding-bottom:2px;display:inline-block}
+.drow{display:flex;align-items:flex-start;gap:6px;font-size:12px;color:var(--t2);margin-bottom:4px}
+.drow i{font-size:14px;margin-top:1px;flex-shrink:0}
+.lcard{background:var(--bg);border-radius:var(--r8);padding:9px;display:flex;flex-direction:column;gap:7px}
+.lr{display:flex;align-items:center;justify-content:space-between}
+.lk{font-size:11px;color:var(--t2)}
+.lv{font-size:11px;font-weight:500}
+.abtn{width:100%;padding:7px;font-size:12px;border:0.5px solid var(--border-mid);border-radius:var(--r8);background:transparent;cursor:pointer;color:var(--text);display:flex;align-items:center;justify-content:center;gap:5px}
+.abtn:hover{background:var(--bg)}
+.dbtn{width:100%;padding:7px;font-size:12px;border:0.5px solid #F0C0C0;border-radius:var(--r8);background:transparent;cursor:pointer;color:#A32D2D;display:flex;align-items:center;justify-content:center;gap:5px}
+.dbtn:hover{background:#FFF0F0}
+/* Full-page views */
+.fullview{flex:1;overflow-y:auto;display:none;flex-direction:column;background:var(--bg)}
+.fullview.active{display:flex}
+/* Requirements */
+.req-wrap{padding:16px;display:flex;flex-direction:column;gap:20px}
+.req-sec{background:var(--surface);border-radius:var(--r12);border:0.5px solid var(--border);overflow:hidden}
+.req-hdr{padding:12px 16px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--apc-blue-light)}
+.req-icon{width:28px;height:28px;border-radius:var(--r8);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.req-title{font-size:13px;font-weight:500}
+.req-cnt{font-size:11px;color:var(--t3);margin-left:auto;background:var(--bg);padding:2px 8px;border-radius:20px}
+.rtbl{width:100%;border-collapse:collapse}
+.rtbl th{font-size:10px;color:var(--t3);font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:8px 14px;text-align:left;border-bottom:0.5px solid var(--border);background:var(--bg)}
+.rtbl td{font-size:12px;color:var(--t2);padding:9px 14px;border-bottom:0.5px solid var(--border);vertical-align:top}
+.rtbl tr:last-child td{border-bottom:none}
+.rtbl tr:hover td{background:var(--bg)}
+.rtbl td:first-child{color:var(--text);font-weight:500}
+.empty-row td{text-align:center;color:var(--t3);font-style:italic}
+/* Lines view */
+.lines-wrap{padding:16px;display:flex;flex-direction:column;gap:16px}
+.line-sec{background:var(--surface);border-radius:var(--r12);border:0.5px solid var(--border);overflow:hidden}
+.line-hdr{padding:12px 16px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--apc-blue-light)}
+.line-dot-lg{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.line-title{font-size:13px;font-weight:500}
+.line-cnt{font-size:11px;color:var(--t3);background:var(--bg);padding:2px 8px;border-radius:20px}
+/* Form */
+.foverlay{display:none;position:fixed;inset:0;background:rgba(0,31,63,.6);z-index:100;align-items:flex-start;justify-content:center;padding:20px 16px;overflow-y:auto}
+.foverlay.open{display:flex}
+.modal{background:var(--surface);border-radius:var(--r12);border:0.5px solid var(--border);padding:0;width:100%;max-width:580px;margin:auto;overflow:hidden}
+.mhdr{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:var(--apc-blue);margin-bottom:0}
+.mtitle{font-family:var(--serif);font-size:18px;color:#fff}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:11px;padding:18px 20px}
+.full{grid-column:1/-1}
+.field{display:flex;flex-direction:column;gap:4px}
+.flbl{font-size:11px;color:var(--t2);font-weight:500}
+.req{color:#E24B4A}
+.cc{font-size:10px;color:var(--t3);text-align:right}
+input,select,textarea{border:0.5px solid var(--border);border-radius:var(--r8);padding:7px 10px;font-size:12px;background:var(--surface);color:var(--text);width:100%}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gov)}
+textarea{resize:vertical}
+.mbox{border:0.5px solid var(--border);border-radius:var(--r8);background:var(--surface);padding:5px 8px;display:flex;flex-wrap:wrap;gap:4px;min-height:36px;cursor:text}
+.mbox:focus-within{border-color:var(--gov)}
+.chip-resp{display:inline-flex;align-items:center;gap:3px;background:var(--gov-bg);color:var(--gov-t);border-radius:20px;padding:2px 8px;font-size:11px}
+.chip-plan{display:inline-flex;align-items:center;gap:3px;background:var(--din-bg);color:var(--din-t);border-radius:20px;padding:2px 8px;font-size:11px}
+.chip-fecha{display:inline-flex;align-items:center;gap:3px;background:var(--col-bg);color:var(--col-t);border-radius:20px;padding:2px 8px;font-size:11px}
+.chip-x{background:none;border:none;cursor:pointer;font-size:14px;line-height:1;padding:0;margin-left:2px;opacity:.6}
+.chip-x:hover{opacity:1}
+.minput{border:none;outline:none;font-size:12px;font-family:var(--font);color:var(--text);background:transparent;min-width:100px;flex:1;padding:2px 0}
+.mdrop{position:absolute;top:calc(100% + 2px);left:0;right:0;z-index:200;background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r8);box-shadow:0 4px 12px rgba(0,0,0,.08);max-height:180px;overflow-y:auto;display:none}
+.mdrop.open{display:block}
+.mopt{padding:7px 10px;font-size:12px;cursor:pointer;color:var(--text);display:flex;align-items:center;gap:7px}
+.mopt:hover{background:var(--bg)}
+.mopt.sel{color:var(--gov)}
+.relwrap{position:relative}
+.factions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;border-top:0.5px solid var(--border);padding-top:12px}
+.bcnl{padding:7px 14px;font-size:12px;border:0.5px solid var(--border);border-radius:var(--r8);background:transparent;cursor:pointer;color:var(--t2)}
+.bsave{padding:7px 16px;font-size:12px;font-weight:600;background:var(--apc-gold);color:#0A2240;border:none;border-radius:var(--r8);cursor:pointer;display:flex;align-items:center;gap:5px}
+.bsave:hover{background:#e09900}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:9px 18px;border-radius:var(--r8);font-size:12px;font-weight:500;opacity:0;transition:opacity .3s;pointer-events:none;z-index:300;color:#fff}
+.toast.show{opacity:1}
+.spinner{width:11px;height:11px;border:1.5px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
+.spinner-dark{width:11px;height:11px;border:1.5px solid var(--border);border-top-color:var(--gov);border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{background:var(--border-mid);border-radius:4px}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="display:flex;align-items:center;gap:12px"><div style="background:var(--apc-gold);width:3px;height:32px;border-radius:2px;flex-shrink:0"></div><div><div style="font-family:var(--serif);font-size:15px;color:#fff;line-height:1.1">Agenda SNCIC DCI</div><div style="font-size:10px;color:rgba(255,255,255,.65);font-weight:400;letter-spacing:.05em;text-transform:uppercase">APC Colombia · 2026</div></div></div>
+      <div class="vtabs">
+        <button class="vtab on" id="tab-cal" onclick="setView('cal')"><i class="ti ti-calendar"></i> Calendario</button>
+        <button class="vtab" id="tab-annual" onclick="setView('annual')"><i class="ti ti-calendar-month"></i> Vista anual</button>
+        <button class="vtab" id="tab-lines" onclick="setView('lines')"><i class="ti ti-list"></i> Líneas</button>
+        <button class="vtab" id="tab-req" onclick="setView('req')"><i class="ti ti-checklist"></i> Requerimientos</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <span id="sync-lbl" style="font-size:11px;color:var(--t3);display:none;align-items:center;gap:5px"><span class="spinner-dark"></span> Sincronizando...</span>
+      <button class="btn-new" onclick="openForm()"><i class="ti ti-plus"></i> Nuevo evento</button>
+    </div>
+  </div>
+
+  <!-- MAIN (Calendario) -->
+  <div id="view-main" style="display:flex;flex:1;overflow:hidden">
+    <div class="sb">
+      <div>
+        <div class="sec">Líneas de trabajo</div>
+        <div id="accordion"></div>
+        <div style="font-size:10px;color:var(--t3);margin-top:3px">Clic para mostrar/ocultar</div>
+      </div>
+      <div>
+        <div class="sec">Estado</div>
+        <div style="font-size:10px;color:var(--t3);margin-bottom:4px">Clic para filtrar</div>
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <div><span class="spill s-real" id="sf-real" onclick="toggleEstado('Realizada')">Realizada</span></div>
+          <div><span class="spill s-conf" id="sf-conf" onclick="toggleEstado('Confirmada')">Confirmada</span></div>
+          <div><span class="spill s-pend" id="sf-pend" onclick="toggleEstado('Por confirmar')">Por confirmar</span></div>
+        </div>
+      </div>
+      <div>
+        <div class="sec">Responsable</div>
+        <select class="fsel" id="fil-resp" onchange="applyFilters()"><option value="">Todos</option></select>
+      </div>
+      <div>
+        <div class="sec">Plan de trabajo</div>
+        <select class="fsel" id="fil-plan" onchange="applyFilters()"><option value="">Todos</option></select>
+      </div>
+      <div style="border-top:0.5px solid var(--border);padding-top:8px">
+        <span id="ev-count" style="font-size:11px;color:var(--t3)">0 eventos</span>
+      </div>
+    </div>
+
+    <div class="cnt">
+      <div class="caltop" id="caltop">
+        <div class="calnav">
+          <button class="navbtn" onclick="prevMes()"><i class="ti ti-chevron-left"></i></button>
+          <button class="navbtn" onclick="nextMes()"><i class="ti ti-chevron-right"></i></button>
+          <span class="calmonth" id="cal-label"></span>
+        </div>
+        <div class="modrow">
+          <span style="font-size:11px;color:var(--t3)">Modalidad:</span>
+          <div class="mchip on" onclick="setMod('',this)">Todas</div>
+          <div class="mchip" onclick="setMod('presencial',this)">Presencial</div>
+          <div class="mchip" onclick="setMod('virtual',this)">Virtual</div>
+        </div>
+      </div>
+      <div class="calscroll">
+        <div class="whdr">
+          <div class="wl">Lun</div><div class="wl">Mar</div><div class="wl">Mié</div>
+          <div class="wl">Jue</div><div class="wl">Vie</div><div class="wl">Sáb</div><div class="wl">Dom</div>
+        </div>
+        <div class="calgrid" id="calgrid"></div>
+      </div>
+    </div>
+
+    <div class="dp" id="detpanel">
+      <div class="ep"><i class="ti ti-calendar-event"></i><p>Selecciona un evento<br>para ver sus detalles</p></div>
+    </div>
+  </div>
+
+  <!-- VISTA ANUAL -->
+  <div id="view-annual" class="fullview">
+    <div style="padding:14px 16px;background:var(--surface);border-bottom:0.5px solid var(--border);flex-shrink:0">
+      <span style="font-family:var(--serif);font-size:16px;color:var(--apc-blue)">2026 — Vista anual</span>
+    </div>
+    <div class="annual-scroll">
+      <div class="annual-grid" id="annual-grid"></div>
+    </div>
+  </div>
+
+  <!-- VISTA LÍNEAS -->
+  <div id="view-lines" class="fullview">
+    <div style="padding:14px 16px;background:var(--surface);border-bottom:0.5px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:space-between">
+      <span style="font-family:var(--serif);font-size:16px;color:var(--apc-blue)">Eventos por línea de trabajo</span>
+      <button class="btn-xl" onclick="exportLines()"><i class="ti ti-file-spreadsheet"></i> Descargar Excel</button>
+    </div>
+    <div class="lines-wrap" id="lines-wrap"></div>
+  </div>
+
+  <!-- VISTA REQUERIMIENTOS -->
+  <div id="view-req" class="fullview">
+    <div style="padding:14px 16px;background:var(--surface);border-bottom:0.5px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:space-between">
+      <span style="font-family:var(--serif);font-size:16px;color:var(--apc-blue)">Requerimientos logísticos</span>
+      <button class="btn-xl" onclick="exportReq()"><i class="ti ti-file-spreadsheet"></i> Descargar Excel</button>
+    </div>
+    <div class="req-wrap">
+      <div class="req-sec">
+        <div class="req-hdr">
+          <div class="req-icon" style="background:#E6F1FB;color:#185FA5"><i class="ti ti-plane"></i></div>
+          <span class="req-title">Requieren comisión</span>
+          <span class="req-cnt" id="cnt-comision">0</span>
+        </div>
+        <table class="rtbl">
+          <thead><tr><th>Evento</th><th>Fecha(s)</th><th>Responsable(s)</th><th>N° personas</th><th>Contratistas</th><th>Funcionarios</th><th>Estado</th></tr></thead>
+          <tbody id="body-comision"></tbody>
+        </table>
+      </div>
+      <div class="req-sec">
+        <div class="req-hdr">
+          <div class="req-icon" style="background:#FAEEDA;color:#633806"><i class="ti ti-coin"></i></div>
+          <span class="req-title">Requieren recursos por parte del operador</span>
+          <span class="req-cnt" id="cnt-apc">0</span>
+        </div>
+        <table class="rtbl">
+          <thead><tr><th>Evento</th><th>Fecha(s)</th><th>Recursos requeridos</th><th>Estado</th></tr></thead>
+          <tbody id="body-apc"></tbody>
+        </table>
+      </div>
+      <div class="req-sec">
+        <div class="req-hdr">
+          <div class="req-icon" style="background:#EEEDFE;color:#3C3489"><i class="ti ti-speakerphone"></i></div>
+          <span class="req-title">Requieren cubrimiento de comunicaciones</span>
+          <span class="req-cnt" id="cnt-comms">0</span>
+        </div>
+        <table class="rtbl">
+          <thead><tr><th>Evento</th><th>Fecha(s)</th><th>Responsable(s)</th><th>Estado</th></tr></thead>
+          <tbody id="body-comms"></tbody>
+        </table>
+      </div>
+      <div class="req-sec">
+        <div class="req-hdr">
+          <div class="req-icon" style="background:#E1F5EE;color:#085041"><i class="ti ti-school"></i></div>
+          <span class="req-title">Fortalecimiento de capacidades</span>
+          <span class="req-cnt" id="cnt-fort">0</span>
+        </div>
+        <table class="rtbl">
+          <thead><tr><th>Evento</th><th>Subtipo</th><th>Fecha(s)</th><th>Plan(es)</th><th>Estado</th></tr></thead>
+          <tbody id="body-fort"></tbody>
+        </table>
+      </div>
+      <div class="req-sec">
+        <div class="req-hdr">
+          <div class="req-icon" style="background:var(--apc-blue-light);color:var(--apc-blue)"><i class="ti ti-user-star"></i></div>
+          <span class="req-title">Requieren participación de la Directora de la DCI</span>
+          <span class="req-cnt" id="cnt-dir-dci">0</span>
+        </div>
+        <table class="rtbl">
+          <thead><tr><th>Evento</th><th>Línea</th><th>Tipo</th><th>Fecha(s)</th><th>Responsable(s)</th><th>Modalidad</th><th>Estado</th></tr></thead>
+          <tbody id="body-dir-dci"></tbody>
+        </table>
+      </div>
+      <div class="req-sec">
+        <div class="req-hdr">
+          <div class="req-icon" style="background:var(--edg-bg);color:var(--edg)"><i class="ti ti-user-shield"></i></div>
+          <span class="req-title">Requieren participación de la Directora General</span>
+          <span class="req-cnt" id="cnt-dir-gral">0</span>
+        </div>
+        <table class="rtbl">
+          <thead><tr><th>Evento</th><th>Línea</th><th>Tipo</th><th>Fecha(s)</th><th>Responsable(s)</th><th>Modalidad</th><th>Estado</th></tr></thead>
+          <tbody id="body-dir-gral"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FORM -->
+<div class="foverlay" id="foverlay">
+  <div class="modal">
+    <div class="mhdr">
+      <span class="mtitle" id="ftitle">Registrar nuevo evento</span>
+      <button class="xbtn" onclick="closeForm()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="fgrid">
+      <div class="field full">
+        <label class="flbl">Línea de trabajo <span class="req">*</span></label>
+        <select id="f-linea" onchange="onLineaChange()">
+          <option value="">Seleccionar...</option>
+          <option>Gobernanza del SNCIC</option>
+          <option>Dinamización del SNCIC</option>
+          <option>Colombia enseña Colombia Col-Col</option>
+          <option>Contrapartidas</option>
+          <option>Cupo fiscal</option>
+          <option>Eventos Dirección General</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="flbl">Tipo de evento <span class="req">*</span></label>
+        <select id="f-tipo" onchange="onTipoChange()"><option value="">Seleccionar línea primero</option></select>
+      </div>
+      <div class="field">
+        <label class="flbl">Tipo de plan</label>
+        <select id="f-plantype" onchange="onPlanTypeChange()">
+          <option value="NA">NA</option>
+          <option value="Territorial">Territorial</option>
+          <option value="Sectorial">Sectorial</option>
+        </select>
+      </div>
+      <div class="field full" id="wrap-subtipo" style="display:none">
+        <label class="flbl">Subtipo de fortalecimiento <span class="req">*</span></label>
+        <select id="f-subtipo">
+          <option value="">Seleccionar...</option>
+          <option>Dirigido a organizaciones de sociedad civil</option>
+          <option>Clínicas de proyectos</option>
+          <option>Encuentros territoriales</option>
+          <option>Seminarios, diplomados o cursos</option>
+          <option>Talleres, socializaciones y charlas</option>
+        </select>
+      </div>
+      <div class="field full" id="wrap-planes" style="display:none">
+        <label class="flbl">Plan(es) de trabajo relacionado(s)</label>
+        <div style="display:flex;gap:8px;margin-bottom:6px">
+          <select id="f-plan-pick" style="flex:1"><option value="">Seleccionar...</option></select>
+          <button type="button" onclick="addPlan()" style="padding:6px 12px;font-size:12px;background:var(--text);color:#fff;border:none;border-radius:var(--r8);cursor:pointer;white-space:nowrap">+ Agregar</button>
+        </div>
+        <div id="plan-tags" style="display:flex;flex-wrap:wrap;gap:4px;min-height:20px"></div>
+      </div>
+      <div class="field">
+        <label class="flbl">Modalidad <span class="req">*</span></label>
+        <select id="f-modalidad">
+          <option value="">Seleccionar...</option>
+          <option>Presencial</option>
+          <option>Virtual</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="flbl">Estado <span class="req">*</span></label>
+        <select id="f-estado">
+          <option value="">Seleccionar...</option>
+          <option>Confirmada</option>
+          <option>Por confirmar</option>
+          <option>Realizada</option>
+        </select>
+      </div>
+      <div class="field full">
+        <label class="flbl">Nombre del evento <span class="req">*</span></label>
+        <input type="text" id="f-nombre" maxlength="350" oninput="updateCC('f-nombre','cc-nombre',350)" placeholder="Máx. 350 caracteres">
+        <span class="cc" id="cc-nombre">0 / 350</span>
+      </div>
+      <div class="field full">
+        <label class="flbl">Descripción</label>
+        <textarea id="f-desc" rows="2" maxlength="700" oninput="updateCC('f-desc','cc-desc',700)" placeholder="Máx. 700 caracteres"></textarea>
+        <span class="cc" id="cc-desc">0 / 700</span>
+      </div>
+      <div class="field full">
+        <label class="flbl">Fechas del evento <span class="req">*</span></label>
+        <div style="display:flex;gap:8px;margin-bottom:6px">
+          <input type="date" id="f-fecha-pick" style="flex:1">
+          <button type="button" onclick="addFecha()" style="padding:6px 12px;font-size:12px;background:var(--text);color:#fff;border:none;border-radius:var(--r8);cursor:pointer;white-space:nowrap">+ Agregar</button>
+        </div>
+        <div id="fecha-tags" style="display:flex;flex-wrap:wrap;gap:4px;min-height:20px"></div>
+        <span style="font-size:10px;color:var(--t3);margin-top:4px;display:block">Agrega una o varias fechas</span>
+      </div>
+      <div class="field full relwrap">
+        <label class="flbl">Responsable(s) <span class="req">*</span></label>
+        <div class="mbox" id="resp-box" onclick="document.getElementById('resp-input').focus()">
+          <div id="resp-tags" style="display:contents"></div>
+          <input class="minput" id="resp-input" placeholder="Buscar..." oninput="renderRespDrop()" onfocus="openRespDrop()" autocomplete="off">
+        </div>
+        <div class="mdrop" id="resp-drop"></div>
+      </div>
+      <div class="field">
+        <label class="flbl">Cubrimiento comunicaciones</label>
+        <select id="f-comms"><option value="no">No</option><option value="si">Sí</option></select>
+      </div>
+      <div class="field">
+        <label class="flbl">Requiere comisión</label>
+        <select id="f-comision" onchange="onComisionChange()"><option value="no">No</option><option value="si">Sí</option></select>
+      </div>
+      <!-- Campos adicionales comisión -->
+      <div class="field full" id="wrap-com-ciudad" style="display:none">
+        <label class="flbl">Ciudad o municipio de la comisión</label>
+        <input type="text" id="f-com-ciudad" placeholder="Ej. Bogotá D.C., Riohacha, Leticia...">
+      </div>
+      <div class="field full relwrap" id="wrap-com-quienes" style="display:none">
+        <label class="flbl">Quiénes viajan</label>
+        <div class="mbox" id="viajan-box" onclick="document.getElementById('viajan-input').focus()">
+          <div id="viajan-tags" style="display:contents"></div>
+          <input class="minput" id="viajan-input" placeholder="Buscar persona..." oninput="renderViajanDrop()" onfocus="openViajanDrop()" autocomplete="off">
+        </div>
+        <div class="mdrop" id="viajan-drop"></div>
+        <div id="viajan-summary" style="font-size:11px;color:var(--t3);margin-top:5px;display:none"></div>
+      </div>
+      <div class="field">
+        <label class="flbl">Participantes estimados en el evento</label>
+        <input type="number" id="f-partic" min="0" placeholder="Número">
+      </div>
+      <div class="field">
+        <label class="flbl">Requiere recursos por el operador</label>
+        <select id="f-recursos" onchange="toggleRecursos()"><option value="no">No</option><option value="si">Sí</option></select>
+      </div>
+      <div class="field full" id="wrap-recursos" style="display:none">
+        <label class="flbl">Descripción de recursos requeridos</label>
+        <textarea id="f-rec-desc" rows="2" placeholder="Describa los recursos"></textarea>
+      </div>
+      <div class="field">
+        <label class="flbl">¿Requiere participación de la Directora de la DCI?</label>
+        <select id="f-dir-dci"><option value="no">No</option><option value="si">Sí</option></select>
+      </div>
+      <div class="field">
+        <label class="flbl">¿Requiere participación de la Directora General?</label>
+        <select id="f-dir-gral"><option value="no">No</option><option value="si">Sí</option></select>
+      </div>
+      <div class="field full">
+        <label class="flbl">Observaciones</label>
+        <textarea id="f-obs" rows="2" placeholder="Notas adicionales"></textarea>
+      </div>
+    </div>
+    <div class="factions">
+      <button class="bcnl" onclick="closeForm()">Cancelar</button>
+      <button class="bsave" id="btn-save" onclick="handleSave()"><i class="ti ti-device-floppy"></i> Guardar</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<!-- Detail modal for lines/req views -->
+<div id="detail-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:flex-start;justify-content:flex-end;padding:16px">
+  <div id="detail-modal-inner" style="background:var(--surface);border-radius:var(--r12);border:0.5px solid var(--border);width:300px;max-height:calc(100vh - 32px);overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px">
+  </div>
+</div>
+
+<script>
+const SHEET_ID = '1cr1Z9E8q31vhOPK355-UdkJX7iwvb-LJotnnKbhoNyI';
+const SHEET_NAME = 'Eventos';
+const SA_EMAIL = 'agenda-sncic-writer@agenda-sncic.iam.gserviceaccount.com';
+const SA_KEY_B64 = 'MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDIx/rQqfxFaHgxsxgzAmSaFG4NzvG3u7PDb4Q8ZzBI8rIsC06w911KF/8PVTy+ZWBzkhDRnN1z2toPve4J3NmHQhzKoOmLhrk2gs927kMChWAi1nPQ1E8HOdqROJo3mWbrr5UE7yVTHEdckGbKE/zZZiBbIYFHtTEeHbpxjTzW4vCEvxe+sKcNpkXZbxlqBxcgPNi14vTpMWRkAKUFFo3BWU6fOYDwPRwwn1meobcb5ngjYrOvTB4pFJ3NndWLzyBgFzF3uSkVPap0Fc/2V76dmv9H+GBAzEDJJThQTw0h/n3qKVsGVwOEjax1J0IMYU0zj5l0YWvV3m7haf+UPuRzAgMBAAECggEAARjc3v7NA8K+tkezQApT3NiQZkaxxIx5PqizOit9u7hPx9EqOQZxAYDAu0PwhrMljsbG/sABBHJFXahuzqng1RUnguYph6X7lxs4GlSZaVxyxQihZu+5KtO3/erue+jZA3VY76q+bD8PbFIsWEhWH0GL8GHDfL/Smo2iz4IInvYwrAfrpR455DKuC3AEgb1EwIgkLyswwm7sJpMgVEpKoSQPcOxxVXdzChHrIb8+sHW8RhOUSFuSo41VSU0PI3IvFZPlWjXNZKpeqS5QDDSjrV0bJEJXESbTTABFm6HM6sdG3hXyOHcOj2P5RGhSYqTVtHluIAOcpm1OO2yzmlyTOQKBgQD8odiD0Sf+SQYVm3U7+2vIjCf+2xPZBVEKkbuBA93esI2BxTLVkh4WfhNeY7Ud69ZPhTyGhIKCnZZYdmTiN7PPkjyw7mP5QmfIyhC6J4CLWxdlEIsIUReBNb2M/e8rn/3Jga2UNtQqU/MMIHbWtzWh5Ge7zr03vRRptaepFQ7KbwKBgQDLdS7Fs80zJepH/KQKuLc7f9LjuHdPybu2tzmc1h/M8IgHPllAH6+eYtSDxQU6Kc1j7UlEAiTLbkiIj5vDjFmvfsGcf8UlzH3hCD3fWKKzscpUiNC25lS3M3H08RmC5B4wDvD0MDdfbEVTaMLBslepa5L7/TOTJUqKuaq6S0XYPQKBgQCTKDd1uTzhm2nG5lIoyXBkVnfptXVfQgCN9ovRQA5abF9RSywsSbvrAC+KGOxkbH7evU6fUMqxCNiN2RE00JuV+qoNqh9kD3Fi/Yk21lHDWyFKhpNmGc5mPoaWfUh3EfAEE9ynbDS0H0iBNNvkgL3l+qUOOgPwVtxwIxdxn0mJUwKBgQCuQDmDx39qXAGwD7drG1KLGenDcNx2sF8dmQU1xsnLmwHVuld0LO8bJqe+B0J30w9+kt5Z6cAbnuNuWhhcvVqejGBDqcZunhn9XjKnk+EdJ5sTFW40B0bs9JmX39oqmTclj9ZcPONfzXn+es26WQTtLB3hxbSjRJ/3+hY3oXo7PQKBgFVRgsGDJaiz8XxqTMdpN6kqVcLmq+/2qQIsqbFjLA6FchCxm1ZvNuSslibV6bO8t48JlQLsbVNLRMsmxoO8k6PIjgXKHFDBDfyTeRw8UYhTf/0Ydlv0QnSiNFwX019QmwbIJjSLfwSIJxLO2pSgoGcOFqErUTcZZ/EV1lmPFVcE';
+
+const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const MS = ['E','F','M','A','M','J','J','A','S','O','N','D'];
+const TIPOS = {
+  'Gobernanza del SNCIC': ['Comité estratégico','Comité programático','Sesiones o instalaciones de mesas (comité operativo)'],
+  'Dinamización del SNCIC': ['Fortalecimiento de capacidades','Reuniones con cooperantes o actores estratégicos','Días conmemorativos y/o eventos temáticos','Foros, congresos, conferencias y seminarios','Comisiones mixtas','Eventos en el marco del SNCIC'],
+  'Colombia enseña Colombia Col-Col': ['Apertura','Seguimiento','Cierre'],
+  'Contrapartidas': [
+    'Identificación Directa - Publicacion Aviso Informativo',
+    'Identificación Directa - Mesa Identificación de Proyectos CI SNCI',
+    'Identificación Directa - Mesa Identificación de Proyectos CI Direcciones Demanda y Oferta',
+    'Identificación Directa - Consolidación Matriz de Identificación de Proyectos CI',
+    'Identificación Directa - Priorización de proyectos CI',
+    'Identificación Directa - Reunión explicación Contrapartida Nacional e Interés en presentar iniciativa',
+    'Formulación de Iniciativa',
+    'Verificación y Evaluación de Iniciativa',
+    'Comité Asesor de Contrapartida Nacional',
+    'Autorización Iniciativa cofinanciada Directora General',
+    'Etapa Precontractual - Elaboración Estudios Técnicos y documentos anexos convenio/contrato',
+    'Etapa Precontractual - Revisión y ajustes Estudios Técnicos y documentos anexos convenio/contrato',
+    'Etapa Precontractual - Inicio del proceso contractual del convenio/contrato en SECOP 2',
+    'Etapa contractual - Suscripción de convenio/contrato',
+    'Etapa contractual - Aprobación pólizas convenio/contrato',
+    'Etapa contractual - Primer Comité de Seguimiento',
+    'Etapa contractual - Primera Visita de Seguimiento',
+    'Etapa contractual - Segundo Comité de Seguimiento',
+    'Etapa contractual - Segunda Visita de Seguimiento',
+    'Etapa contractual - Tercer Comité de Seguimiento',
+    'Etapa contractual - Comité de Seguimiento Final',
+    'Etapa contractual - Primer desembolso de recursos',
+    'Etapa contractual - Segundo desembolso de recursos',
+    'Etapa contractual - Tercer desembolso de recursos',
+    'Etapa poscontractual - Solicitud Oficina Financiera documentos para la liquidación contractual',
+    'Etapa poscontractual - Solicitud conviniente/contratante documentos para la liquidación contractual',
+    'Etapa poscontractual - Radicación Oficina de Contratos - DAF, de la solicitud del proceso de liquidación contractual y remisión proyecto de acta y documentos',
+    'Etapa poscontractual - Primera revisión Oficina de Contratos - DAF, de la solicitud del proceso de liquidación contractual y remisión proyecto de acta y documentos',
+    'Etapa poscontractual - Primer ajuste a la revisión de la Oficina de Contratos - DAF, de la solicitud del proceso de liquidación contractual y remisión proyecto de acta y documentos',
+    'Etapa poscontractual - Segunda revisión Oficina de Contratos - DAF, de la solicitud del proceso de liquidación contractual y remisión proyecto de acta y documentos',
+    'Etapa poscontractual - Segundo ajuste a la revisión de la Oficina de Contratos - DAF, de la solicitud del proceso de liquidación contractual y remisión proyecto de acta y documentos',
+    'Etapa poscontractual - Tercera revisión Oficina de Contratos - DAF, de la solicitud del proceso de liquidación contractual y remisión proyecto de acta y documentos',
+    'Etapa poscontractual - Tercer ajuste a la revisión de la Oficina de Contratos - DAF, de la solicitud del proceso de liquidación contractual y remisión proyecto de acta y documentos',
+    'Etapa poscontractual - Suscripción por el conviniente/contratante del acta de liquidación contractual',
+    'Etapa poscontractual - Suscripción por APC Colombia del acta de liquidación contractual',
+    'Espacio de conocimiento - Contrapartida Nacional'
+  ],
+  'Cupo fiscal': [
+    'Envío a Entidades Nacional y enlaces SNCI correo de identificación de solicitud de cupo fiscal para la siguiente vigencia',
+    'Elaboración de concepto técnico para Anteproyecto de Presupuesto de necesidades de recursos para cupo fiscal para la siguiente vigencia, según identificación',
+    'Radicación Entidad Nacional de la solicitud de cupo fiscal para la vigencia actual y documentos anexos',
+    'Revisión solicitud de cupo fiscal para la vigencia actual y documentos anexos',
+    'Ajuste por la Entidad Nacional de observaciones a la solicitud de cupo fiscal para la vigencia actual y documentos anexos',
+    'Inicio por la OAP de la instancia del trámite de cupo fiscal para la vigencia actual en la PIIP',
+    'Ajuste al proyecto de inversión en la instancia del trámite de cupo fiscal para la vigencia actual en la PIIP',
+    'Primera revisión del DAPRE al proyecto de inversión en la instancia del trámite de cupo fiscal para la vigencia actual en la PIIP',
+    'Primer ajuste al proyecto de inversión en la instancia del trámite de cupo fiscal para la vigencia actual en la PIIP',
+    'Segunda revisión del DAPRE al proyecto de inversión en la instancia del trámite de cupo fiscal para la vigencia actual en la PIIP',
+    'Segundo ajuste al proyecto de inversión en la instancia del trámite de cupo fiscal para la vigencia actual en la PIIP',
+    'Tercera revisión del DAPRE al proyecto de inversión en la instancia del trámite de cupo fiscal para la vigencia actual en la PIIP',
+    'Tercer ajuste al proyecto de inversión en la instancia del trámite de cupo fiscal para la vigencia actual en la PIIP',
+    'Revisión del DNP al proyecto de inversión en la instancia del trámite de cupo fiscal para la vigencia actual en la PIIP',
+    'Concepto preliminar del DNP al proyecto de inversión en la instancia del trámite de cupo fiscal para la vigencia actual en la PIIP',
+    'Concepto posterior del DNP al proyecto de inversión en la instancia del trámite de cupo fiscal para la vigencia actual en la PIIP',
+    'Solicitud Oficina Financiera al Ministerio de Hacienda y Crédito Público desbloqueo de recursos para cupo fiscal',
+    'Desbloqueo Ministerio de Hacienda y Crédito Público a los recursos para cupo fiscal',
+    'Elaboración y radicación Oficina Financiera de resolución, CDP y documentos, al Ministerio de Hacienda y Crédito Público para incorporación de recursos en virtud del trámite de cupo fiscal',
+    'Incorporación de recursos Ministerio de Hacienda y Crédito Público a la Entidad Nacional, en virtud del trámite de cupo fiscal',
+    'Espacio de conocimiento - Cupo Fiscal'
+  ],
+  'Eventos Dirección General': ['Participación en eventos','Comisiones especiales','Reuniones de alto nivel']
+};
+const TERR = ['Antioquia','Barranquilla','Bogotá D.C.','Boyacá','Caquetá','Atlántico','Bolívar','Cauca','Cesar','Chocó','Guaviare','Córdoba','Huila','La Guajira','Norte de Santander','Risaralda','Nariño','San Andrés','Santander','Cartagena','Sucre','Tolima','Valle del Cauca','Manizales','Meta','Amazonas','Arauca','Caldas','Casanare','Cundinamarca','Guainía','Magdalena','Putumayo','Quindío','Vaupés','Vichada'];
+const SECT = ['Culturas, Artes y Saberes','Avance Social, Igualdad y Equidad','Transición Energética Justa','Sistema Nacional Reforma Agraria','Justicia y del Derecho','Medicina Legal','Migración','Salud y Protección Social','Paz','Reindustrialización','Ambiente y Acción Climática'];
+const RESPS_DATA = [
+  {n:'Sandra Bermúdez',t:'Funcionario'},
+  {n:'Luisa Muñoz',t:'Funcionario'},
+  {n:'Maria Alejandra Mejía',t:'Contratista'},
+  {n:'Lisbeth Buitrago',t:'Funcionario'},
+  {n:'Alexandra Rodriguez',t:'Funcionario'},
+  {n:'Diego Jaimes',t:'Contratista'},
+  {n:'Oscar Díaz',t:'Funcionario'},
+  {n:'Marlen Espitia G.',t:'Funcionario'},
+  {n:'Nygel Manuel Davis',t:'Funcionario'},
+  {n:'Loly Navarro',t:'Funcionario'},
+  {n:'Diana Sandoval',t:'Funcionario'},
+  {n:'Aleyda Gomez',t:'Contratista'},
+  {n:'Miguel Cadena',t:'Contratista'},
+  {n:'Luis López',t:'Contratista'},
+  {n:'Juan Sebastian Borja',t:'Contratista'},
+  {n:'Andres Bernal',t:'Contratista'},
+  {n:'Aura Redondo',t:'Contratista'},
+  {n:'Rodrigo Valero',t:'Contratista'},
+  {n:'Joanna Rojas',t:'Contratista'},
+  {n:'Diana Apache',t:'Contratista'},
+  {n:'Jennifer Rodriguez',t:'Contratista'},
+  {n:'Darlin Rosero',t:'Pasante'},
+  {n:'Luz Emerita López',t:'Contratista'},
+  {n:'Juan Carlos Sandoval',t:'Funcionario'},
+  {n:'Christian León',t:'Funcionario'},
+  {n:'Marco Cruz',t:'Funcionario'},
+  {n:'John Vergel',t:'Contratista'},
+  {n:'Arturo Valiente Corredor',t:'Contratista'},
+  {n:'Daniela González',t:'Contratista'},
+  {n:'Estefania Calderón',t:'Contratista'}
+];
+const RESPS = RESPS_DATA.map(r=>r.n);
+function getRespTipo(name){ const r=RESPS_DATA.find(x=>x.n===name); return r?r.t:''; }
+function calcComisionTotals(names){
+  const list=names.map(n=>getRespTipo(n));
+  return {
+    total:list.length,
+    funcionarios:list.filter(t=>t==='Funcionario').length,
+    contratistas:list.filter(t=>t==='Contratista').length,
+    pasantes:list.filter(t=>t==='Pasante').length
+  };
+}
+const LINEAS = [
+  {k:'gov',l:'Gobernanza del SNCIC',c:'#185FA5',ec:'ec-gov',bc:'b-gov'},
+  {k:'din',l:'Dinamización del SNCIC',c:'#1D9E75',ec:'ec-din',bc:'b-din'},
+  {k:'col',l:'Colombia enseña Colombia Col-Col',c:'#7F77DD',ec:'ec-col',bc:'b-col'},
+  {k:'ctr',l:'Contrapartidas',c:'#BA7517',ec:'ec-ctr',bc:'b-ctr'},
+  {k:'cup',l:'Cupo fiscal',c:'#888780',ec:'ec-cup',bc:'b-cup'},
+  {k:'edg',l:'Eventos Dirección General',c:'#D4537E',ec:'ec-edg',bc:'b-edg'}
+];
+const HEADERS = ['ID','Linea','Tipo','Subtipo','PlanTipo','PlanNombre','Modalidad','Nombre','Desc','FechaIni','FechaFin','Fechas','Responsable','Comms','Comision','ComCiudad','ComViajan','ComTotal','ComFuncionarios','ComContratistas','ComPasantes','Partic','RecursosOperador','RecDesc','DirDCI','DirGral','Estado','Obs'];
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxxmTDV8NnAsbtkfPSCsKI80xC6RrMENu-IhYJx8plQ0L7aL0dpRFLDO-cX2DPisrXx/exec';
+
+let eventos=[], filtrados=[];
+let filLineas=new Set(['gov','din','col','ctr','cup','edg']);
+let filEstados=new Set(['Realizada','Confirmada','Por confirmar']);
+let filMod='',filResp='',filPlan='';
+let abiertos=new Set();
+let mes=new Date().getMonth();
+let editId=null, token=null;
+let selResps=[], selPlanes=[], selFechas=[], selViajan=[];
+
+function getLinea(label){ return LINEAS.find(l=>l.l===label)||LINEAS[4]; }
+function fmt(d){ if(!d)return''; const p=d.split('-'); return p.length<3?d:p[2]+'/'+p[1]; }
+function fmtFechas(ev){
+  if(ev.fechas&&ev.fechas.split('|').length>1) return ev.fechas.split('|').map(d=>fmt(d)).join(', ');
+  if(ev.fechaIni) return fmt(ev.fechaIni)+(ev.fechaFin&&ev.fechaFin!==ev.fechaIni?' → '+fmt(ev.fechaFin):'');
+  return '—';
+}
+function estadoPill(e){ const c=e==='Realizada'?'s-real':e==='Confirmada'?'s-conf':'s-pend'; return '<span class="spill '+c+'">'+e+'</span>'; }
+function toast(msg,bg){ const t=document.getElementById('toast'); t.textContent=msg; t.style.background=bg||'#1D9E75'; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),4000); }
+function showSync(v){ document.getElementById('sync-lbl').style.display=v?'inline-flex':'none'; }
+
+// ── AUTH ──
+async function getToken(){
+  try{
+    const hdr={alg:'RS256',typ:'JWT'};
+    const now=Math.floor(Date.now()/1000);
+    const claim={iss:SA_EMAIL,scope:'https://www.googleapis.com/auth/spreadsheets',aud:'https://oauth2.googleapis.com/token',exp:now+3600,iat:now};
+    const enc=v=>btoa(JSON.stringify(v)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+    const unsigned=enc(hdr)+'.'+enc(claim);
+    const bin=Uint8Array.from(atob(SA_KEY_B64),c=>c.charCodeAt(0));
+    const key=await crypto.subtle.importKey('pkcs8',bin,{name:'RSASSA-PKCS1-v1_5',hash:'SHA-256'},false,['sign']);
+    const sig=await crypto.subtle.sign('RSASSA-PKCS1-v1_5',key,new TextEncoder().encode(unsigned));
+    const b64=btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+    const r=await fetch('https://oauth2.googleapis.com/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion='+unsigned+'.'+b64});
+    const d=await r.json(); return d.access_token||null;
+  }catch(e){ console.error('Auth:',e); return null; }
+}
+
+// ── SHEETS ──
+async function loadEventos(){
+  showSync(true);
+  // Load from Apps Script (source of truth)
+  // Show localStorage while waiting
+  try{
+    const local=localStorage.getItem('sncic_ev');
+    if(local){eventos=JSON.parse(local);renderAll();}
+  }catch(e){}
+  // Then load fresh from Sheet and override
+  await loadFromSheet();
+  showSync(false);
+  renderAll();
+}
+
+
+function cleanDate(v){
+  if(!v) return '';
+  const s=String(v);
+  // Handle ISO date format from Sheets: '2026-01-14T05:00:00.000Z' → '2026-01-14'
+  if(s.includes('T')) return s.split('T')[0];
+  // Handle Date objects serialized as strings
+  if(s.match(/^\d{4}-\d{2}-\d{2}/)) return s.substring(0,10);
+  return s;
+}
+
+function parseRow(row){
+  const len=row.length;
+  const isLatest=len>=26;const isStd=!isLatest&&len>=24;const isMid=!isLatest&&!isStd&&len>=21;
+  return {
+    id:row[0]||'',linea:row[1]||'',tipo:row[2]||'',subtipo:row[3]||'',
+    planTipo:row[4]||'',planNombre:row[5]||'',modalidad:row[6]||'',nombre:row[7]||'',
+    desc:row[8]||'',fechaIni:cleanDate(row[9]),fechaFin:cleanDate(row[10]),
+    fechas:(row[11]||'').split('|').map(cleanDate).filter(Boolean).join('|'),
+    responsable:row[12]||'',comms:row[13]||'',comision:row[14]||'',
+    comCiudad:(isLatest||isStd)?(row[15]||''):'',
+    comViajan:(isLatest||isStd)?(row[16]||''):'',
+    partic:(isLatest||isStd)?(row[21]||''):isMid?(row[18]||''):(row[15]||''),
+    recursosAPC:(isLatest||isStd)?(row[22]||''):isMid?(row[19]||''):(row[16]||''),
+    recDesc:(isLatest||isStd)?(row[23]||''):isMid?(row[20]||''):(row[17]||''),
+    dirDCI:isLatest?(row[24]||'no'):'no',
+    dirGral:isLatest?(row[25]||'no'):'no',
+    estado:isLatest?(row[26]||''):isStd?(row[24]||''):isMid?(row[21]||''):(row[18]||''),
+    obs:isLatest?(row[27]||''):isStd?(row[25]||''):isMid?(row[22]||''):(row[19]||'')
+  };
+}
+
+async function loadFromSheet(){
+  // Try fetch first (works in most corporate networks)
+  try{
+    const r=await fetch(APPS_SCRIPT_URL,{method:'GET',mode:'cors',redirect:'follow'});
+    const d=await r.json();
+    if(d.status==='ok'&&d.values){
+      eventos=d.values.slice(1).map(parseRow).filter(e=>e.nombre);
+      try{localStorage.setItem('sncic_ev',JSON.stringify(eventos));}catch(ex){}
+      console.log('loadFromSheet: fetch OK,', eventos.length, 'eventos');
+      return;
+    }
+  }catch(e){console.log('loadFromSheet: fetch failed, trying JSONP...',e.message);}
+  // Fallback to JSONP
+  try{
+    const d=await jsonpCall(APPS_SCRIPT_URL, null);
+    if(d.status==='ok'&&d.values){
+      eventos=d.values.slice(1).map(parseRow).filter(e=>e.nombre);
+      try{localStorage.setItem('sncic_ev',JSON.stringify(eventos));}catch(ex){}
+      console.log('loadFromSheet: JSONP OK,', eventos.length, 'eventos');
+    }
+  }catch(err){console.error('loadFromSheet: both failed',err);}
+}
+
+async function saveToSheet(){
+  // Kept for compatibility - actual writes go through addEvento/updateEvento
+  try{localStorage.setItem('sncic_ev',JSON.stringify(eventos));}catch(ex){}
+}
+
+function jsonpCall(url, dataObj){
+  return new Promise((resolve, reject)=>{
+    const cbName='_cb'+Date.now()+'_'+Math.floor(Math.random()*9999);
+    const script=document.createElement('script');
+    const timer=setTimeout(()=>{
+      delete window[cbName]; script.remove();
+      reject(new Error('Timeout'));
+    }, 15000);
+    window[cbName]=function(d){
+      clearTimeout(timer); delete window[cbName]; script.remove();
+      resolve(d);
+    };
+    const payload=dataObj?encodeURIComponent(JSON.stringify(dataObj)):'';
+    script.src=url+(payload?'?data='+payload+'&callback='+cbName:'?callback='+cbName);
+    document.head.appendChild(script);
+  });
+}
+
+function makeRow(e){
+  const viajan=e.comViajan?e.comViajan.split('|').filter(Boolean):[];
+  const t=calcComisionTotals(viajan);
+  return [e.id,e.linea,e.tipo,e.subtipo,e.planTipo,e.planNombre,e.modalidad,e.nombre,e.desc,
+    e.fechaIni,e.fechaFin,e.fechas,e.responsable,e.comms,e.comision,
+    e.comCiudad||'',e.comViajan||'',t.total||'',t.funcionarios||'',t.contratistas||'',t.pasantes||'',
+    e.partic,e.recursosAPC,e.recDesc,e.dirDCI||'no',e.dirGral||'no',e.estado,e.obs];
+}
+
+async function callAppsScript(dataObj){
+  // Try fetch first
+  try{
+    const payload=encodeURIComponent(JSON.stringify(dataObj));
+    const r=await fetch(APPS_SCRIPT_URL+'?data='+payload,{method:'GET',mode:'cors',redirect:'follow'});
+    const d=await r.json();
+    console.log('callAppsScript fetch:', JSON.stringify(d));
+    return d;
+  }catch(e){console.log('callAppsScript: fetch failed, trying JSONP',e.message);}
+  // Fallback JSONP
+  return await jsonpCall(APPS_SCRIPT_URL, dataObj);
+}
+
+async function addEvento(ev){
+  try{
+    console.log('addEvento: calling Apps Script...');
+    const d=await callAppsScript({action:'append',row:makeRow(ev)});
+    console.log('addEvento response:', JSON.stringify(d));
+    if(d.status!=='ok') throw new Error(d.message||'Error');
+    toast('Guardado en Sheets ✓','#00794A');
+  }catch(err){
+    console.error('addEvento ERROR:', err);
+    toast('Error al guardar en Sheets: '+err.message,'#A32D2D');
+  }
+}
+
+async function updateEvento(ev){
+  try{
+    const d=await callAppsScript({action:'update',id:ev.id,row:makeRow(ev)});
+    if(d.status!=='ok') throw new Error(d.message||'Error');
+  }catch(err){ toast('Error al actualizar: '+err.message,'#A32D2D'); throw err; }
+}
+
+// ── RENDER ──
+function renderAll(){ buildAccordion(); applyFilters(); buildRespFilter(); buildPlanFilter(); }
+
+function buildAccordion(){
+  const acc=document.getElementById('accordion'); acc.innerHTML='';
+  LINEAS.forEach(ld=>{
+    const total=eventos.filter(e=>getLinea(e.linea).k===ld.k).length;
+    const active=filLineas.has(ld.k);
+    const item=document.createElement('div');
+    item.style.cssText='display:flex;align-items:center;gap:7px;padding:5px 4px;cursor:pointer;border-radius:6px;user-select:none;'+(active?'opacity:1':'opacity:0.35');
+    item.innerHTML='<div class="ldot" style="background:'+ld.c+'"></div><span style="font-size:11px;font-weight:500;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+ld.l+'</span><span class="lcnt">'+total+'</span>';
+    item.onclick=()=>toggleFilLinea(ld.k);
+    item.title='Clic para '+(active?'ocultar':'mostrar');
+    acc.appendChild(item);
+  });
+}
+
+function toggleFilLinea(k){
+  if(filLineas.has(k)) filLineas.delete(k);
+  else filLineas.add(k);
+  buildAccordion(); applyFilters();
+}
+function toggleOpen(k){} // kept for compat
+
+function buildRespFilter(){ const sel=document.getElementById('fil-resp'),cur=sel.value;sel.innerHTML='<option value="">Todos</option>';const all=[];eventos.forEach(e=>{if(e.responsable)e.responsable.split(',').forEach(r=>{const t=r.trim();if(t&&!all.includes(t))all.push(t);});});all.sort().forEach(r=>{const o=document.createElement('option');o.value=r;o.textContent=r;sel.appendChild(o);});sel.value=cur; }
+function buildPlanFilter(){ const sel=document.getElementById('fil-plan'),cur=sel.value;sel.innerHTML='<option value="">Todos</option>';const all=[];eventos.forEach(e=>{if(e.planNombre)e.planNombre.split('|').forEach(p=>{const t=p.trim();if(t&&!all.includes(t))all.push(t);});});all.sort().forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=p;sel.appendChild(o);});sel.value=cur; }
+
+function toggleEstado(s){
+  const ids={'Realizada':'sf-real','Confirmada':'sf-conf','Por confirmar':'sf-pend'};
+  const el=document.getElementById(ids[s]);
+  // Toggle: if active (in set) → deactivate; if inactive → activate
+  if(filEstados.has(s)){
+    filEstados.delete(s);
+    el.style.opacity='.35';
+    el.title='Clic para mostrar';
+  } else {
+    filEstados.add(s);
+    el.style.opacity='1';
+    el.title='Clic para ocultar';
+  }
+  buildAccordion();applyFilters();
+}
+function setMod(m,el){ filMod=m;document.querySelectorAll('.mchip').forEach(c=>c.classList.remove('on'));el.classList.add('on');applyFilters(); }
+
+function applyFilters(){
+  filResp=document.getElementById('fil-resp').value;
+  filPlan=document.getElementById('fil-plan').value;
+  filtrados=eventos.filter(e=>{
+    if(!e.nombre) return false; // skip empty rows
+    if(!filLineas.has(getLinea(e.linea).k))return false;
+    // Show event if estado matches filter OR if estado is empty (treat as Confirmada)
+    const est = e.estado || 'Confirmada';
+    if(!filEstados.has(est))return false;
+    if(filMod&&e.modalidad.toLowerCase()!==filMod)return false;
+    if(filResp&&!e.responsable.includes(filResp))return false;
+    if(filPlan&&!(e.planNombre||'').split('|').map(x=>x.trim()).includes(filPlan))return false;
+    return true;
+  });
+  document.getElementById('ev-count').textContent=filtrados.length+' evento'+(filtrados.length!==1?'s':'');
+  renderCal();
+}
+
+function renderCal(){
+  document.getElementById('cal-label').textContent=MESES[mes]+' 2026';
+  const grid=document.getElementById('calgrid');grid.innerHTML='';
+  const first=new Date(2026,mes,1);let dow=first.getDay();dow=dow===0?6:dow-1;
+  const dim=new Date(2026,mes+1,0).getDate(),prev=new Date(2026,mes,0).getDate();
+  const today=new Date();const cells=[];
+  for(let i=dow-1;i>=0;i--)cells.push({d:prev-i,cur:false});
+  for(let d=1;d<=dim;d++)cells.push({d,cur:true});
+  while(cells.length%7!==0)cells.push({d:cells.length-dow-dim+1,cur:false});
+  cells.forEach(cell=>{
+    const div=document.createElement('div');div.className='cd'+(cell.cur?'':' other');
+    if(cell.cur&&cell.d===today.getDate()&&mes===today.getMonth()&&2026===today.getFullYear())div.classList.add('today');
+    const dn=document.createElement('div');dn.className='dn';dn.textContent=cell.d;div.appendChild(dn);
+    if(cell.cur){
+      const ds='2026-'+String(mes+1).padStart(2,'0')+'-'+String(cell.d).padStart(2,'0');
+      const day=filtrados.filter(e=>{if(!e.fechaIni)return false;if(e.fechas)return e.fechas.split('|').includes(ds);return ds>=e.fechaIni&&ds<=(e.fechaFin||e.fechaIni);});
+      day.slice(0,2).forEach(ev=>{const chip=document.createElement('span');chip.className='ec '+getLinea(ev.linea).ec;chip.textContent=ev.nombre;chip.onclick=()=>showDetail(ev);div.appendChild(chip);});
+      if(day.length>2){
+        const m=document.createElement('span');m.className='more';
+        m.textContent='+'+(day.length-2)+' más';
+        m.onclick=()=>showDayList(day,ds);
+        div.appendChild(m);
+      }
+      if(day.length>0) div.querySelector('.dn').style.cursor='pointer', div.querySelector('.dn').onclick=()=>showDayList(day,ds);
+    }
+    grid.appendChild(div);
+  });
+}
+
+function renderAnnual(){
+  const grid=document.getElementById('annual-grid');grid.innerHTML='';
+  const today=new Date();
+  for(let m=0;m<12;m++){
+    const wrap=document.createElement('div');wrap.className='mini-month';
+    const title=document.createElement('div');title.className='mini-month-title';title.textContent=MESES[m];wrap.appendChild(title);
+    const whdr=document.createElement('div');whdr.className='mini-whdr';
+    ['L','M','X','J','V','S','D'].forEach(d=>{const el=document.createElement('div');el.className='mini-wl';el.textContent=d;whdr.appendChild(el);});
+    wrap.appendChild(whdr);
+    const g=document.createElement('div');g.className='mini-grid';
+    const first=new Date(2026,m,1);let dow=first.getDay();dow=dow===0?6:dow-1;
+    const dim=new Date(2026,m+1,0).getDate(),prev=new Date(2026,m,0).getDate();
+    const cells=[];
+    for(let i=dow-1;i>=0;i--)cells.push({d:prev-i,cur:false});
+    for(let d=1;d<=dim;d++)cells.push({d,cur:true});
+    while(cells.length%7!==0)cells.push({d:cells.length-dow-dim+1,cur:false});
+    cells.forEach(cell=>{
+      const div=document.createElement('div');div.className='mini-cd'+(cell.cur?'':' other');
+      if(cell.cur&&cell.d===today.getDate()&&m===today.getMonth()&&2026===today.getFullYear())div.classList.add('today');
+      const dn=document.createElement('div');dn.className='mini-dn';dn.textContent=cell.d;div.appendChild(dn);
+      if(cell.cur){
+        const ds='2026-'+String(m+1).padStart(2,'0')+'-'+String(cell.d).padStart(2,'0');
+        const day=filtrados.filter(e=>{if(!e.fechaIni)return false;if(e.fechas)return e.fechas.split('|').includes(ds);return ds>=e.fechaIni&&ds<=(e.fechaFin||e.fechaIni);});
+        day.slice(0,3).forEach(ev=>{const bar=document.createElement('div');bar.className='mini-ec';bar.style.background=getLinea(ev.linea).c;bar.title=ev.nombre;bar.onclick=()=>{setView('cal');mes=m;renderCal();showDetail(ev);};div.appendChild(bar);});
+      }
+      g.appendChild(div);
+    });
+    wrap.appendChild(g);grid.appendChild(wrap);
+  }
+}
+
+function showDetailModal(ev){
+  const modal=document.getElementById('detail-modal');
+  const inner=document.getElementById('detail-modal-inner');
+  if(!modal||!inner)return;
+  // Build same content as showDetail
+  const ld=getLinea(ev.linea);
+  const respH=ev.responsable?ev.responsable.split(',').map(r=>'<span style="display:inline-block;background:var(--gov-bg);color:var(--gov-t);border-radius:20px;padding:1px 8px;font-size:10px;margin:1px">'+r.trim()+'</span>').join(''):'—';
+  const planH=ev.planNombre?ev.planNombre.split('|').map(p=>'<span style="display:inline-block;background:var(--din-bg);color:var(--din-t);border-radius:20px;padding:1px 8px;font-size:10px;margin:1px">'+p.trim()+'</span>').join(''):'';
+  let fechaH=ev.fechaIni;
+  if(ev.fechas&&ev.fechas.split('|').length>1)fechaH=ev.fechas.split('|').map(d=>fmt(d)).join(' · ');
+  else if(ev.fechaFin&&ev.fechaFin!==ev.fechaIni)fechaH=ev.fechaIni+' → '+ev.fechaFin;
+  const viajan=ev.comViajan?ev.comViajan.split('|').filter(Boolean):[];
+  const totals=calcComisionTotals(viajan);
+  inner.innerHTML=
+    '<div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:13px;font-weight:500">Detalle</span><button class="xbtn" onclick="closeDetailModal()"><i class="ti ti-x"></i></button></div>'
+    +'<div><div class="evname">'+ev.nombre+'</div><span class="badge '+ld.bc+'">'+ev.linea+'</span></div>'
+    +'<div><div class="dlbl">Información</div>'
+    +'<div class="drow"><i class="ti ti-calendar"></i><span>'+fechaH+'</span></div>'
+    +'<div class="drow"><i class="ti ti-users"></i><div>'+respH+'</div></div>'
+    +'<div class="drow"><i class="ti ti-map-pin"></i>'+(ev.modalidad||'—')+'</div>'
+    +(ev.subtipo?'<div class="drow"><i class="ti ti-tag"></i>'+ev.subtipo+'</div>':'')
+    +(planH?'<div class="drow"><i class="ti ti-map"></i><div>'+planH+'</div></div>':'')
+    +(ev.partic?'<div class="drow"><i class="ti ti-users"></i>'+ev.partic+' participantes estimados</div>':'')
+    +'</div>'
+    +'<div><div class="dlbl">Logística</div><div class="lcard">'
+    +'<div class="lr"><span class="lk">Estado</span>'+estadoPill(ev.estado)+'</div>'
+    +'<div class="lr"><span class="lk">Comunicaciones</span><span class="lv">'+(ev.comms==='si'?'Sí':'No')+'</span></div>'
+    +'<div class="lr"><span class="lk">Comisión</span><span class="lv">'+(ev.comision==='si'?'Sí':'No')+'</span></div>'
+    +(ev.comision==='si'&&ev.comCiudad?'<div class="lr"><span class="lk">Ciudad</span><span class="lv">'+ev.comCiudad+'</span></div>':'')
+    +(ev.comision==='si'&&viajan.length?'<div class="lr"><span class="lk">En comisión</span><span class="lv">'+totals.total+' personas</span></div>':'')
+    +'<div class="lr"><span class="lk">Recursos operador</span><span class="lv">'+(ev.recursosAPC==='si'?'Sí':'No')+'</span></div>'
+    +(ev.recDesc?'<div style="font-size:11px;color:var(--t2);padding-top:2px">'+ev.recDesc+'</div>':'')
+    +'<div class="lr"><span class="lk">Directora DCI</span><span class="lv">'+(ev.dirDCI==='si'?'<span style="color:var(--apc-blue);font-weight:600">Sí</span>':'No')+'</span></div>'
+    +'<div class="lr"><span class="lk">Directora General</span><span class="lv">'+(ev.dirGral==='si'?'<span style="color:var(--edg);font-weight:600">Sí</span>':'No')+'</span></div>'
+    +'</div></div>'
+    +(ev.desc?'<div><div class="dlbl">Descripción</div><div style="font-size:12px;color:var(--t2);line-height:1.5">'+ev.desc+'</div></div>':'')
+    +(ev.obs?'<div><div class="dlbl">Observaciones</div><div style="font-size:12px;color:var(--t2);line-height:1.5">'+ev.obs+'</div></div>':'')
+    +'<button class="abtn" onclick="closeDetailModal();editEvento(this.dataset.id)" data-id="'+ev.id+'"><i class="ti ti-edit"></i> Editar</button>'
+    +'<button class="dbtn" onclick="closeDetailModal();deleteEvento(this.dataset.id)" data-id="'+ev.id+'"><i class="ti ti-trash"></i> Eliminar</button>';
+  modal.style.display='flex';
+}
+function closeDetailModal(){
+  const m=document.getElementById('detail-modal');if(m)m.style.display='none';
+}
+document.addEventListener('click',e=>{
+  const modal=document.getElementById('detail-modal');
+  const inner=document.getElementById('detail-modal-inner');
+  if(modal&&inner&&e.target===modal)closeDetailModal();
+});
+
+function renderLines(){
+  const wrap=document.getElementById('lines-wrap');wrap.innerHTML='';
+  LINEAS.forEach(ld=>{
+    const evs=eventos.filter(e=>getLinea(e.linea).k===ld.k).sort((a,b)=>a.fechaIni.localeCompare(b.fechaIni));
+    const sec=document.createElement('div');sec.className='line-sec';
+    sec.innerHTML='<div class="line-hdr"><div class="line-dot-lg" style="background:'+ld.c+'"></div><span class="line-title">'+ld.l+'</span><span class="line-cnt">'+evs.length+'</span></div>';
+    if(!evs.length){sec.innerHTML+='<div style="padding:16px;font-size:12px;color:var(--t3);font-style:italic">Sin eventos registrados</div>';}
+    else{
+      const tbl=document.createElement('table');tbl.className='rtbl';
+      tbl.innerHTML='<thead><tr><th>Nombre</th><th>Tipo</th><th>Fecha(s)</th><th>Responsable(s)</th><th>Modalidad</th><th>Plan(es)</th><th>Estado</th></tr></thead>';
+      const tbody=document.createElement('tbody');
+      evs.forEach(ev=>{
+        const tr=document.createElement('tr');
+        const planes=ev.planNombre?ev.planNombre.split('|').join(', '):'—';
+        tr.innerHTML='<td style="font-weight:500;color:var(--text);cursor:pointer">'+ev.nombre+'</td><td>'+ev.tipo+'</td><td>'+fmtFechas(ev)+'</td><td>'+ev.responsable+'</td><td>'+ev.modalidad+'</td><td>'+planes+'</td><td>'+estadoPill(ev.estado)+'</td>';
+        tr.style.cursor='pointer';tr.onclick=()=>showDetailModal(ev);
+        tbody.appendChild(tr);
+      });
+      tbl.appendChild(tbody);sec.appendChild(tbl);
+    }
+    wrap.appendChild(sec);
+  });
+}
+
+function renderReq(){
+  const cl=e=>'style="cursor:pointer" onclick="showDetailModal(eventos.find(x=>x.id===\'' + e.id + '\'))"';
+  const ep=e=>estadoPill(e.estado||'Confirmada');
+  const secs=[
+    {bodyId:'body-comision',cntId:'cnt-comision',cols:7,filter:e=>e.comision==='si',
+     row:e=>'<tr '+cl(e)+'><td>'+e.nombre+'</td><td>'+fmtFechas(e)+'</td><td>'+e.responsable+'</td><td>'+(e.comTotal||'—')+'</td><td>'+(e.comCont||'—')+'</td><td>'+(e.comFunc||'—')+'</td><td>'+ep(e)+'</td></tr>'},
+    {bodyId:'body-apc',cntId:'cnt-apc',cols:4,filter:e=>e.recursosAPC==='si',
+     row:e=>'<tr '+cl(e)+'><td>'+e.nombre+'</td><td>'+fmtFechas(e)+'</td><td>'+(e.recDesc||'—')+'</td><td>'+ep(e)+'</td></tr>'},
+    {bodyId:'body-comms',cntId:'cnt-comms',cols:4,filter:e=>e.comms==='si',
+     row:e=>'<tr '+cl(e)+'><td>'+e.nombre+'</td><td>'+fmtFechas(e)+'</td><td>'+e.responsable+'</td><td>'+ep(e)+'</td></tr>'},
+    {bodyId:'body-fort',cntId:'cnt-fort',cols:5,filter:e=>e.tipo==='Fortalecimiento de capacidades',
+     row:e=>'<tr '+cl(e)+'><td>'+e.nombre+'</td><td>'+(e.subtipo||'—')+'</td><td>'+fmtFechas(e)+'</td><td>'+(e.planNombre?e.planNombre.split('|').join(', '):'—')+'</td><td>'+ep(e)+'</td></tr>'},
+    {bodyId:'body-dir-dci',cntId:'cnt-dir-dci',cols:7,filter:e=>e.dirDCI==='si',
+     row:e=>'<tr '+cl(e)+'><td>'+e.nombre+'</td><td>'+e.linea+'</td><td>'+e.tipo+'</td><td>'+fmtFechas(e)+'</td><td>'+e.responsable+'</td><td>'+(e.modalidad||'—')+'</td><td>'+ep(e)+'</td></tr>'},
+    {bodyId:'body-dir-gral',cntId:'cnt-dir-gral',cols:7,filter:e=>e.dirGral==='si',
+     row:e=>'<tr '+cl(e)+'><td>'+e.nombre+'</td><td>'+e.linea+'</td><td>'+e.tipo+'</td><td>'+fmtFechas(e)+'</td><td>'+e.responsable+'</td><td>'+(e.modalidad||'—')+'</td><td>'+ep(e)+'</td></tr>'}
+  ];
+  secs.forEach(sec=>{
+    const evs=eventos.filter(sec.filter).sort((a,b)=>(a.fechaIni||'').localeCompare(b.fechaIni||''));
+    const body=document.getElementById(sec.bodyId);const cnt=document.getElementById(sec.cntId);
+    if(!body||!cnt)return;
+    cnt.textContent=evs.length;
+    body.innerHTML=evs.length?evs.map(sec.row).join(''):'<tr><td colspan="'+sec.cols+'" style="text-align:center;color:var(--t3);font-style:italic;padding:20px">Sin actividades registradas</td></tr>';
+  });
+}
+
+// ── VIEWS ──
+function setView(v){
+  ['cal','annual','lines','req'].forEach(id=>document.getElementById('tab-'+id).classList.toggle('on',v===id));
+  document.getElementById('view-main').style.display=v==='cal'?'flex':'none';
+  document.getElementById('view-annual').classList.toggle('active',v==='annual');
+  document.getElementById('view-lines').classList.toggle('active',v==='lines');
+  document.getElementById('view-req').classList.toggle('active',v==='req');
+  if(v==='annual')renderAnnual();
+  if(v==='lines')renderLines();
+  if(v==='req')renderReq();
+}
+
+function prevMes(){ mes--;if(mes<0)mes=11;renderCal(); }
+function nextMes(){ mes++;if(mes>11)mes=0;renderCal(); }
+
+// ── DETAIL ──
+function showDetail(ev){
+  const ld=getLinea(ev.linea);
+  const respH=ev.responsable?ev.responsable.split(',').map(r=>'<span style="display:inline-block;background:var(--gov-bg);color:var(--gov-t);border-radius:20px;padding:1px 8px;font-size:10px;margin:1px">'+r.trim()+'</span>').join(''):'—';
+  const planH=ev.planNombre?ev.planNombre.split('|').map(p=>'<span style="display:inline-block;background:var(--din-bg);color:var(--din-t);border-radius:20px;padding:1px 8px;font-size:10px;margin:1px">'+p.trim()+'</span>').join(''):'';
+  let fechaH=ev.fechaIni;
+  if(ev.fechas&&ev.fechas.split('|').length>1)fechaH=ev.fechas.split('|').map(d=>fmt(d)).join(' · ');
+  else if(ev.fechaFin&&ev.fechaFin!==ev.fechaIni)fechaH=ev.fechaIni+' → '+ev.fechaFin;
+  document.getElementById('detpanel').innerHTML=
+    '<div class="dph"><span class="dpt">Detalle</span><button class="xbtn" onclick="clearDetail()"><i class="ti ti-x"></i></button></div>'
+    +'<div><div class="evname">'+ev.nombre+'</div><span class="badge '+ld.bc+'">'+ev.linea+'</span></div>'
+    +'<div><div class="dlbl">Información</div>'
+    +'<div class="drow"><i class="ti ti-calendar"></i><span>'+fechaH+'</span></div>'
+    +'<div class="drow"><i class="ti ti-users"></i><div>'+respH+'</div></div>'
+    +'<div class="drow"><i class="ti ti-map-pin"></i>'+(ev.modalidad||'—')+'</div>'
+    +(ev.subtipo?'<div class="drow"><i class="ti ti-tag"></i>'+ev.subtipo+'</div>':'')
+    +(planH?'<div class="drow"><i class="ti ti-map"></i><div>'+planH+'</div></div>':'')
+    +(ev.partic?'<div class="drow"><i class="ti ti-users"></i>'+ev.partic+' personas</div>':'')
+    +'</div>'
+    +'<div><div class="dlbl">Logística</div><div class="lcard">'
+    +'<div class="lr"><span class="lk">Estado</span>'+estadoPill(ev.estado)+'</div>'
+    +'<div class="lr"><span class="lk">Comunicaciones</span><span class="lv">'+(ev.comms==='si'?'Sí':'No')+'</span></div>'
+    +'<div class="lr"><span class="lk">Comisión</span><span class="lv">'+(ev.comision==='si'?'Sí':'No')+'</span></div>'
+    +(ev.comision==='si'?(()=>{
+    const viajan=ev.comViajan?ev.comViajan.split('|').filter(Boolean):[];
+    const totals=calcComisionTotals(viajan);
+    const viajanH=viajan.map(n=>{const t=getRespTipo(n);return '<span style="display:inline-block;border-radius:20px;padding:1px 8px;font-size:10px;margin:1px;background:'+(t==='Funcionario'?'var(--gov-bg);color:var(--gov-t)':t==='Pasante'?'var(--col-bg);color:var(--col-t)':'var(--din-bg);color:var(--din-t)')+'">'+n+'</span>';}).join('');
+    return (ev.comCiudad?'<div class="lr"><span class="lk">Ciudad comisión</span><span class="lv">'+ev.comCiudad+'</span></div>':'')
+      +(viajan.length?'<div class="drow" style="flex-direction:column;align-items:flex-start"><span class="lk" style="margin-bottom:3px">Quiénes viajan</span><div>'+viajanH+'</div></div>':'')
+      +'<div class="lr"><span class="lk">Total en comisión</span><span class="lv">'+totals.total+'</span></div>'
+      +(totals.funcionarios?'<div class="lr"><span class="lk">Funcionarios</span><span class="lv">'+totals.funcionarios+'</span></div>':'')
+      +(totals.contratistas?'<div class="lr"><span class="lk">Contratistas</span><span class="lv">'+totals.contratistas+'</span></div>':'')
+      +(totals.pasantes?'<div class="lr"><span class="lk">Pasantes</span><span class="lv">'+totals.pasantes+'</span></div>':'');
+  })():'')
+    +'<div class="lr"><span class="lk">Recursos operador</span><span class="lv">'+(ev.recursosAPC==='si'?'Sí':'No')+'</span></div>'
+    +(ev.recDesc?'<div style="font-size:11px;color:var(--t2);padding-top:2px">'+ev.recDesc+'</div>':'')
+    +'<div class="lr"><span class="lk">Directora DCI</span><span class="lv">'+(ev.dirDCI==='si'?'<span style="color:var(--apc-blue);font-weight:600">Sí</span>':'No')+'</span></div>'
+    +'<div class="lr"><span class="lk">Directora General</span><span class="lv">'+(ev.dirGral==='si'?'<span style="color:var(--edg);font-weight:600">Sí</span>':'No')+'</span></div>'
+    +'</div></div>'
+    +(ev.desc?'<div><div class="dlbl">Descripción</div><div style="font-size:12px;color:var(--t2);line-height:1.5">'+ev.desc+'</div></div>':'')
+    +(ev.obs?'<div><div class="dlbl">Observaciones</div><div style="font-size:12px;color:var(--t2);line-height:1.5">'+ev.obs+'</div></div>':'')
+    +`<button class="abtn" onclick="editEvento('${ev.id}')"><i class="ti ti-edit"></i> Editar</button>`
+    +`<button class="dbtn" onclick="deleteEvento('${ev.id}')"><i class="ti ti-trash"></i> Eliminar</button>`;
+}
+function clearDetail(){ document.getElementById('detpanel').innerHTML='<div class="ep"><i class="ti ti-calendar-event"></i><p>Selecciona un evento<br>para ver sus detalles</p></div>'; }
+
+function showDayList(evs, ds){
+  // Show list of all events on a day in the detail panel
+  const parts = ds.split('-');
+  const label = parts[2]+'/'+parts[1]+'/'+parts[0];
+  let html = '<div class="dph"><span class="dpt">'+label+'</span><button class="xbtn" style="color:var(--t3)" onclick="clearDetail()"><i class="ti ti-x"></i></button></div>';
+  html += '<div style="font-size:11px;color:var(--t3);margin-bottom:6px">'+evs.length+' evento'+(evs.length!==1?'s':'')+' este día</div>';
+  evs.forEach(ev=>{
+    const ld=getLinea(ev.linea);
+    const evId=ev.id;
+    html += '<div style="border:0.5px solid var(--border);border-radius:var(--r8);padding:9px;margin-bottom:7px;cursor:pointer;background:var(--surface)" data-evid="'+evId+'" onclick="const e=eventos.find(x=>x.id===this.dataset.evid);if(e)showDetail(e)">'
+      +'<div style="font-size:11px;font-weight:500;color:var(--text);margin-bottom:4px;line-height:1.35">'+ev.nombre+'</div>'
+      +'<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">'
+      +'<span class="badge '+ld.bc+'" style="margin:0">'+ev.linea+'</span>'
+      +estadoPill(ev.estado||'Confirmada')
+      +'</div>'
+      +(ev.responsable?'<div style="font-size:10px;color:var(--t3);margin-top:4px">'+ev.responsable.split(',').map(r=>r.trim()).join(' · ')+'</div>':'')
+      +'</div>';
+  });
+  document.getElementById('detpanel').innerHTML = html;
+}
+
+// ── EXPORT ──
+function exportLines(){
+  const wb = XLSX.utils.book_new();
+  const cols = ['Línea de trabajo','Tipo','Subtipo','Nombre del evento','Descripción','Fecha inicio','Fecha fin','Todas las fechas','Responsable(s)','Modalidad','Tipo de plan','Plan(es) relacionado(s)','Comunicaciones','Comisión','N° personas comisión','N° contratistas','N° funcionarios','Participantes estimados en el evento','Recursos por el operador','Desc. recursos','Estado','Observaciones'];
+  // One sheet per linea + one sheet "Todos"
+  LINEAS.forEach(ld => {
+    const evs = eventos.filter(e => getLinea(e.linea).k === ld.k).sort((a,b)=>a.fechaIni.localeCompare(b.fechaIni));
+    const rows = evs.map(e=>[e.linea,e.tipo,e.subtipo||'',e.nombre,e.desc||'',e.fechaIni,e.fechaFin||'',e.fechas?e.fechas.split('|').join('; '):'',e.responsable,e.modalidad,e.planTipo,e.planNombre?e.planNombre.split('|').join('; '):'',e.comms==='si'?'Sí':'No',e.comision==='si'?'Sí':'No',e.comTotal||'',e.comCont||'',e.comFunc||'',e.partic||'',e.recursosAPC==='si'?'Sí':'No',e.recDesc||'',e.estado,e.obs||'']);
+    const ws = XLSX.utils.aoa_to_sheet([cols,...rows]);
+    // Column widths
+    ws['!cols'] = cols.map((_,i)=>({wch:i===3||i===8?35:i===4?40:18}));
+    const sheetName = ld.l.substring(0,31); // Excel max 31 chars
+    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+  });
+  // All events sheet
+  const allRows = eventos.sort((a,b)=>a.linea.localeCompare(b.linea)||a.fechaIni.localeCompare(b.fechaIni)).map(e=>[e.linea,e.tipo,e.subtipo||'',e.nombre,e.desc||'',e.fechaIni,e.fechaFin||'',e.fechas?e.fechas.split('|').join('; '):'',e.responsable,e.modalidad,e.planTipo,e.planNombre?e.planNombre.split('|').join('; '):'',e.comms==='si'?'Sí':'No',e.comision==='si'?'Sí':'No',e.comTotal||'',e.comCont||'',e.comFunc||'',e.partic||'',e.recursosAPC==='si'?'Sí':'No',e.recDesc||'',e.estado,e.obs||'']);
+  const wsAll = XLSX.utils.aoa_to_sheet([cols,...allRows]);
+  wsAll['!cols'] = cols.map((_,i)=>({wch:i===3||i===8?35:i===4?40:18}));
+  XLSX.utils.book_append_sheet(wb, wsAll, 'Todos los eventos');
+  XLSX.writeFile(wb, 'lineas-sncic-2026.xlsx');
+}
+
+function exportReq(){
+  const wb = XLSX.utils.book_new();
+  // Full cols shared across sheets
+  const fullRow = e => {
+    const viajan = e.comViajan ? e.comViajan.split('|').filter(Boolean) : [];
+    const t = calcComisionTotals(viajan);
+    return [
+      e.nombre||'', e.linea||'', e.tipo||'', e.subtipo||'',
+      fmtFechas(e), e.modalidad||'',
+      e.planTipo||'', e.planNombre ? e.planNombre.split('|').join('; ') : '',
+      e.responsable||'', e.estado||'',
+      e.comms==='si'?'Sí':'No',
+      e.comision==='si'?'Sí':'No',
+      e.comCiudad||'', viajan.join(', '),
+      t.total||'', t.funcionarios||'', t.contratistas||'', t.pasantes||'',
+      e.partic||'',
+      e.recursosAPC==='si'?'Sí':'No', e.recDesc||'',
+      e.dirDCI==='si'?'Sí':'No',
+      e.dirGral==='si'?'Sí':'No',
+      e.desc||'', e.obs||''
+    ];
+  };
+  const fullCols = [
+    'Nombre del evento','Línea de trabajo','Tipo','Subtipo',
+    'Fecha(s)','Modalidad',
+    'Tipo de plan','Plan(es) de trabajo relacionado(s)',
+    'Responsable(s)','Estado',
+    'Cubrimiento comunicaciones',
+    'Requiere comisión',
+    'Ciudad comisión','Quiénes viajan en comisión',
+    'Total personas en comisión','N° funcionarios','N° contratistas','N° pasantes',
+    'Participantes estimados en el evento',
+    'Recursos por el operador','Descripción recursos',
+    'Participa Directora DCI','Participa Directora General',
+    'Descripción','Observaciones'
+  ];
+
+  const sheets = [
+    {
+      name: 'Comisiones',
+      filter: e => e.comision === 'si',
+    },
+    {
+      name: 'Recursos operador',
+      filter: e => e.recursosAPC === 'si',
+    },
+    {
+      name: 'Comunicaciones',
+      filter: e => e.comms === 'si',
+    },
+    {
+      name: 'Fortalecimiento',
+      filter: e => e.tipo === 'Fortalecimiento de capacidades',
+    },
+    {
+      name: 'Directora DCI',
+      filter: e => e.dirDCI === 'si',
+    },
+    {
+      name: 'Directora General',
+      filter: e => e.dirGral === 'si',
+    }
+  ];
+
+  sheets.forEach(sec => {
+    const evs = eventos.filter(sec.filter).sort((a,b)=>(a.fechaIni||'').localeCompare(b.fechaIni||''));
+    const ws = XLSX.utils.aoa_to_sheet([fullCols, ...evs.map(fullRow)]);
+    ws['!cols'] = fullCols.map((_,i)=>({wch: i===0||i===8?35: i===3||i===13||i===21||i===22?40: 20}));
+    XLSX.utils.book_append_sheet(wb, ws, sec.name);
+  });
+
+  XLSX.writeFile(wb, 'requerimientos-sncic-2026.xlsx');
+}
+
+// ── FORM ──
+function onLineaChange(){ const linea=document.getElementById('f-linea').value;const sel=document.getElementById('f-tipo');sel.innerHTML='<option value="">Seleccionar...</option>';(TIPOS[linea]||[]).forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;sel.appendChild(o);});document.getElementById('wrap-subtipo').style.display='none';document.getElementById('f-subtipo').value=''; }
+function onTipoChange(){ const tipo=document.getElementById('f-tipo').value;document.getElementById('wrap-subtipo').style.display=tipo==='Fortalecimiento de capacidades'?'flex':'none';if(tipo!=='Fortalecimiento de capacidades')document.getElementById('f-subtipo').value=''; }
+function onPlanTypeChange(){ const tipo=document.getElementById('f-plantype').value;const wrap=document.getElementById('wrap-planes');const pick=document.getElementById('f-plan-pick');if(!tipo||tipo==='NA'){wrap.style.display='none';selPlanes=[];renderPlanTags();return;}wrap.style.display='flex';pick.innerHTML='<option value="">Seleccionar...</option>';(tipo==='Territorial'?TERR:SECT).forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=p;pick.appendChild(o);}); }
+function onComisionChange(){
+  const v=document.getElementById('f-comision').value;
+  ['wrap-com-ciudad','wrap-com-quienes'].forEach(id=>document.getElementById(id).style.display=v==='si'?'flex':'none');
+  if(v!=='si'){selViajan=[];renderViajanTags();}
+}
+function toggleRecursos(){ document.getElementById('wrap-recursos').style.display=document.getElementById('f-recursos').value==='si'?'flex':'none'; }
+function updateCC(iid,cid,max){ document.getElementById(cid).textContent=document.getElementById(iid).value.length+' / '+max; }
+
+function addPlan(){ const pick=document.getElementById('f-plan-pick');const val=pick.value;if(!val||selPlanes.includes(val))return;selPlanes.push(val);renderPlanTags();pick.value=''; }
+function removePlan(i){ selPlanes.splice(i,1);renderPlanTags(); }
+function renderPlanTags(){ const wrap=document.getElementById('plan-tags');if(!wrap)return;wrap.innerHTML='';selPlanes.forEach((p,i)=>{const sp=document.createElement('span');sp.className='chip-plan';sp.textContent=p;const btn=document.createElement('button');btn.type='button';btn.className='chip-x';btn.textContent='×';btn.onclick=()=>removePlan(i);sp.appendChild(btn);wrap.appendChild(sp);}); }
+
+function addFecha(){ const pick=document.getElementById('f-fecha-pick');const val=pick.value;if(!val||selFechas.includes(val))return;selFechas.push(val);selFechas.sort();renderFechaTags();pick.value=''; }
+function removeFecha(i){ selFechas.splice(i,1);renderFechaTags(); }
+function renderFechaTags(){ const wrap=document.getElementById('fecha-tags');if(!wrap)return;wrap.innerHTML='';selFechas.forEach((d,i)=>{const sp=document.createElement('span');sp.className='chip-fecha';sp.textContent=fmt(d);const btn=document.createElement('button');btn.type='button';btn.className='chip-x';btn.textContent='×';btn.onclick=()=>removeFecha(i);sp.appendChild(btn);wrap.appendChild(sp);}); }
+
+function openRespDrop(){ renderRespDrop();document.getElementById('resp-drop').classList.add('open'); }
+function renderRespDrop(){ const q=document.getElementById('resp-input').value.toLowerCase();const drop=document.getElementById('resp-drop');const filtered=RESPS.filter(r=>r.toLowerCase().includes(q));drop.innerHTML='';filtered.forEach(r=>{const div=document.createElement('div');div.className='mopt'+(selResps.includes(r)?' sel':'');const ic=document.createElement('i');ic.className='ti '+(selResps.includes(r)?'ti-check':'ti-user');div.appendChild(ic);div.appendChild(document.createTextNode(r));div.onmousedown=e=>{e.preventDefault();toggleResp(r);};drop.appendChild(div);});if(!filtered.length)drop.innerHTML='<div style="padding:8px 10px;font-size:12px;color:var(--t3)">Sin resultados</div>'; }
+function toggleResp(r){ if(selResps.includes(r))selResps=selResps.filter(x=>x!==r);else selResps.push(r);renderRespTags();renderRespDrop();document.getElementById('resp-input').value='';document.getElementById('resp-input').focus(); }
+function renderRespTags(){ const wrap=document.getElementById('resp-tags');if(!wrap)return;wrap.innerHTML='';selResps.forEach(r=>{const sp=document.createElement('span');sp.className='chip-resp';sp.textContent=r;const btn=document.createElement('button');btn.type='button';btn.className='chip-x';btn.textContent='×';btn.onmousedown=e=>{e.preventDefault();toggleResp(r);};sp.appendChild(btn);wrap.appendChild(sp);}); }
+document.addEventListener('click',e=>{
+  const box=document.getElementById('resp-box');const drop=document.getElementById('resp-drop');
+  if(box&&drop&&!box.contains(e.target)&&!drop.contains(e.target))drop.classList.remove('open');
+  const vbox=document.getElementById('viajan-box');const vdrop=document.getElementById('viajan-drop');
+  if(vbox&&vdrop&&!vbox.contains(e.target)&&!vdrop.contains(e.target))vdrop.classList.remove('open');
+});
+
+function openViajanDrop(){ renderViajanDrop(); document.getElementById('viajan-drop').classList.add('open'); }
+function renderViajanDrop(){
+  const q=document.getElementById('viajan-input').value.toLowerCase();
+  const drop=document.getElementById('viajan-drop');
+  const filtered=RESPS_DATA.filter(r=>r.n.toLowerCase().includes(q));
+  drop.innerHTML='';
+  filtered.forEach(r=>{
+    const div=document.createElement('div');div.className='mopt'+(selViajan.includes(r.n)?' sel':'');
+    const ic=document.createElement('i');ic.className='ti '+(selViajan.includes(r.n)?'ti-check':'ti-user');
+    div.appendChild(ic);
+    const txt=document.createElement('span');txt.textContent=r.n;div.appendChild(txt);
+    const badge=document.createElement('span');badge.textContent=r.t;
+    badge.style.cssText='font-size:10px;padding:1px 7px;border-radius:20px;margin-left:auto;background:'+(r.t==='Funcionario'?'var(--gov-bg);color:var(--gov-t)':r.t==='Pasante'?'var(--col-bg);color:var(--col-t)':'var(--din-bg);color:var(--din-t)');
+    div.appendChild(badge);
+    div.onmousedown=e=>{e.preventDefault();toggleViajan(r.n);};
+    drop.appendChild(div);
+  });
+  if(!filtered.length)drop.innerHTML='<div style="padding:8px 10px;font-size:12px;color:var(--t3)">Sin resultados</div>';
+}
+function toggleViajan(n){
+  if(selViajan.includes(n))selViajan=selViajan.filter(x=>x!==n);else selViajan.push(n);
+  renderViajanTags();renderViajanDrop();
+  document.getElementById('viajan-input').value='';
+  document.getElementById('viajan-input').focus();
+}
+function renderViajanTags(){
+  const wrap=document.getElementById('viajan-tags');if(!wrap)return;
+  wrap.innerHTML='';
+  selViajan.forEach(n=>{
+    const ld=getLinea;const tipo=getRespTipo(n);
+    const sp=document.createElement('span');
+    sp.style.cssText='display:inline-flex;align-items:center;gap:3px;border-radius:20px;padding:2px 8px;font-size:11px;background:'+(tipo==='Funcionario'?'var(--gov-bg);color:var(--gov-t)':tipo==='Pasante'?'var(--col-bg);color:var(--col-t)':'var(--din-bg);color:var(--din-t)');
+    sp.textContent=n;
+    const btn=document.createElement('button');btn.type='button';btn.className='chip-x';btn.textContent='×';
+    btn.onmousedown=e=>{e.preventDefault();toggleViajan(n);};
+    sp.appendChild(btn);wrap.appendChild(sp);
+  });
+  // Update summary
+  const sum=document.getElementById('viajan-summary');
+  if(selViajan.length>0){
+    const totals=calcComisionTotals(selViajan);
+    const parts=[];
+    if(totals.funcionarios>0)parts.push(totals.funcionarios+' funcionario'+(totals.funcionarios>1?'s':''));
+    if(totals.contratistas>0)parts.push(totals.contratistas+' contratista'+(totals.contratistas>1?'s':''));
+    if(totals.pasantes>0)parts.push(totals.pasantes+' pasante'+(totals.pasantes>1?'s':''));
+    sum.textContent='Total en comisión: '+totals.total+' persona'+(totals.total>1?'s':'')+' ('+parts.join(', ')+')';
+    sum.style.display='block';
+  } else {
+    sum.style.display='none';
+  }
+}
+
+function resetForm(){
+  ['f-linea','f-tipo','f-subtipo','f-plantype','f-modalidad','f-estado','f-comms','f-comision','f-recursos'].forEach(id=>{const el=document.getElementById(id);if(el)el.selectedIndex=0;});
+  ['f-nombre','f-desc','f-fecha-pick','f-partic','f-com-ciudad','f-rec-desc','f-obs'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const dDci=document.getElementById('f-dir-dci');if(dDci)dDci.value='no';
+  const dGral=document.getElementById('f-dir-gral');if(dGral)dGral.value='no';;
+  selResps=[];selPlanes=[];selFechas=[];selViajan=[];
+  renderRespTags();renderPlanTags();renderFechaTags();renderViajanTags();
+  document.getElementById('resp-input').value='';
+  ['wrap-subtipo','wrap-planes','wrap-recursos','wrap-com-ciudad','wrap-com-quienes'].forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById('cc-nombre').textContent='0 / 350';
+  document.getElementById('cc-desc').textContent='0 / 700';
+}
+
+function openForm(){ editId=null;document.getElementById('ftitle').textContent='Registrar nuevo evento';resetForm();document.getElementById('foverlay').classList.add('open'); }
+function closeForm(){ document.getElementById('foverlay').classList.remove('open'); }
+
+function editEvento(id){
+  const ev=eventos.find(e=>e.id===id);if(!ev)return;
+  editId=id;resetForm();
+  document.getElementById('ftitle').textContent='Editar evento';
+  document.getElementById('foverlay').classList.add('open');
+  setTimeout(()=>{
+    document.getElementById('f-linea').value=ev.linea;onLineaChange();
+    setTimeout(()=>{document.getElementById('f-tipo').value=ev.tipo;onTipoChange();setTimeout(()=>document.getElementById('f-subtipo').value=ev.subtipo||'',50);},50);
+    document.getElementById('f-plantype').value=ev.planTipo||'NA';onPlanTypeChange();
+    setTimeout(()=>{selPlanes=ev.planNombre?ev.planNombre.split('|').filter(Boolean):[];renderPlanTags();},60);
+    document.getElementById('f-modalidad').value=ev.modalidad;
+    document.getElementById('f-estado').value=ev.estado;
+    document.getElementById('f-nombre').value=ev.nombre;updateCC('f-nombre','cc-nombre',350);
+    document.getElementById('f-desc').value=ev.desc||'';updateCC('f-desc','cc-desc',700);
+    selFechas=ev.fechas?ev.fechas.split('|').filter(Boolean):(ev.fechaIni?[ev.fechaIni]:[]);renderFechaTags();
+    selResps=ev.responsable?ev.responsable.split(',').map(r=>r.trim()).filter(Boolean):[];renderRespTags();
+    document.getElementById('f-comms').value=ev.comms||'no';
+    document.getElementById('f-comision').value=ev.comision||'no';onComisionChange();
+    document.getElementById('f-com-ciudad').value=ev.comCiudad||'';
+    selViajan=ev.comViajan?ev.comViajan.split('|').filter(Boolean):[];renderViajanTags();
+    document.getElementById('f-partic').value=ev.partic||'';
+    document.getElementById('f-recursos').value=ev.recursosAPC||'no';toggleRecursos();
+    document.getElementById('f-rec-desc').value=ev.recDesc||'';
+    document.getElementById('f-dir-dci').value=ev.dirDCI||'no';
+    document.getElementById('f-dir-gral').value=ev.dirGral||'no';
+    document.getElementById('f-obs').value=ev.obs||'';
+  },80);
+}
+
+function handleSave(){
+  try{
+    const missing=[];
+    if(!document.getElementById('f-linea').value)missing.push('Línea de trabajo');
+    if(!document.getElementById('f-nombre').value.trim())missing.push('Nombre');
+    if(!selFechas.length)missing.push('Fecha(s)');
+    if(!selResps.length)missing.push('Responsable(s)');
+    if(!document.getElementById('f-estado').value)missing.push('Estado');
+    if(missing.length){toast('Faltan: '+missing.join(', '),'#A32D2D');return;}
+    saveEvent().catch(e=>{toast('Error: '+e.message,'#A32D2D');const btn=document.getElementById('btn-save');if(btn){btn.disabled=false;btn.innerHTML='<i class="ti ti-device-floppy"></i> Guardar';}});
+  }catch(e){toast('Error: '+e.message,'#A32D2D');}
+}
+
+async function saveEvent(){
+  const btn=document.getElementById('btn-save');
+  btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Guardando...';
+  const ev={
+    id:editId||'e'+Date.now(),
+    linea:document.getElementById('f-linea').value,
+    tipo:document.getElementById('f-tipo').value,
+    subtipo:document.getElementById('f-subtipo').value,
+    planTipo:document.getElementById('f-plantype').value,
+    planNombre:selPlanes.join('|'),
+    modalidad:document.getElementById('f-modalidad').value,
+    nombre:document.getElementById('f-nombre').value.trim(),
+    desc:document.getElementById('f-desc').value,
+    fechaIni:selFechas[0]||'',fechaFin:selFechas[selFechas.length-1]||'',
+    fechas:selFechas.join('|'),
+    responsable:selResps.join(', '),
+    comms:document.getElementById('f-comms').value,
+    comision:document.getElementById('f-comision').value,
+    comCiudad:document.getElementById('f-com-ciudad').value,
+    comViajan:selViajan.join('|'),
+    partic:document.getElementById('f-partic').value,
+    recursosAPC:document.getElementById('f-recursos').value,
+    recDesc:document.getElementById('f-rec-desc').value,
+    dirDCI:document.getElementById('f-dir-dci').value,
+    dirGral:document.getElementById('f-dir-gral').value,
+    estado:document.getElementById('f-estado').value,
+    obs:document.getElementById('f-obs').value
+  };
+  try{localStorage.setItem('sncic_ev',JSON.stringify(eventos));}catch(ex){}
+  btn.disabled=false;btn.innerHTML='<i class="ti ti-device-floppy"></i> Guardar';
+  closeForm();
+  if(editId){
+    const idx2=eventos.findIndex(e=>e.id===editId);if(idx2>=0)eventos[idx2]=ev;
+    renderAll();toast('Evento actualizado');
+    updateEvento(ev).catch(()=>{});
+  } else {
+    eventos.push(ev);
+    renderAll();toast('Evento guardado');
+    addEvento(ev).catch(()=>{});
+  }
+}
+
+async function deleteEvento(id){
+  if(!confirm('¿Eliminar este evento?'))return;
+  try{
+    const d=await callAppsScript({action:'delete',id:id});
+    if(d.status!=='ok') throw new Error(d.message||'Error al eliminar');
+    eventos=eventos.filter(e=>e.id!==id);
+    try{localStorage.setItem('sncic_ev',JSON.stringify(eventos));}catch(ex){}
+    clearDetail();renderAll();toast('Evento eliminado','#633806');
+  }catch(err){
+    toast('Error al eliminar: '+err.message,'#A32D2D');
+    console.error('deleteEvento:',err);
+  }
+}
+
+// ── AUTO-REFRESH ──
+// Poll every 60 seconds to pick up changes from other users
+setInterval(async ()=>{
+  try{
+    const resp=await jsonpCall(APPS_SCRIPT_URL, null).catch(()=>null);
+    if(!resp||resp.status!=='ok') return;
+    const rows=(resp.values||[]).slice(1);
+    if(rows.length===0) return;
+    const fresh=rows.map(row=>{
+      const len=row.length;
+      const isNew=len>=24;const isMid=!isNew&&len>=21;
+      return {
+        id:row[0]||'',linea:row[1]||'',tipo:row[2]||'',subtipo:row[3]||'',
+        planTipo:row[4]||'',planNombre:row[5]||'',modalidad:row[6]||'',nombre:row[7]||'',
+        desc:row[8]||'',fechaIni:row[9]||'',fechaFin:row[10]||'',fechas:row[11]||'',
+        responsable:row[12]||'',comms:row[13]||'',comision:row[14]||'',
+        comCiudad:isNew?(row[15]||''):'',comViajan:isNew?(row[16]||''):'',
+        partic:isNew?(row[21]||''):isMid?(row[18]||''):(row[15]||''),
+        recursosAPC:isNew?(row[22]||''):isMid?(row[19]||''):(row[16]||''),
+        recDesc:isNew?(row[23]||''):isMid?(row[20]||''):(row[17]||''),
+        dirDCI:isNew?(row[24]||'no'):'no',dirGral:isNew?(row[25]||'no'):'no',
+        estado:isNew?(row[26]||''):isMid?(row[21]||''):(row[18]||''),
+        obs:isNew?(row[27]||''):isMid?(row[22]||''):(row[19]||'')
+      };
+    }).filter(e=>e.nombre);
+    // Only update if count changed or any id is new
+    const currentIds=new Set(eventos.map(e=>e.id));
+    const hasNew=fresh.some(e=>!currentIds.has(e.id));
+    const countChanged=fresh.length!==eventos.length;
+    if(hasNew||countChanged){
+      // Only update if Sheet has MORE events (don't overwrite local additions)
+      if(fresh.length >= eventos.length || hasNew){
+        eventos=fresh;
+        try{localStorage.setItem('sncic_ev',JSON.stringify(eventos));}catch(e){}
+        renderAll();
+      }
+    }
+  }catch(e){}
+},60000);
+
+// ── INICIO ──
+// Clear ALL localStorage on this version to fix corrupted state
+try{
+  const sv=localStorage.getItem('sncic_version');
+  if(sv!=='v6'){
+    localStorage.clear();
+    localStorage.setItem('sncic_version','v6');
+  } else {
+    const s=localStorage.getItem('sncic_ev');
+    if(s){eventos=JSON.parse(s);renderAll();}
+  }
+}catch(e){ try{localStorage.clear();}catch(ex){} }
+loadEventos();
+</script>
+</body>
+</html>
