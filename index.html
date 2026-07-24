@@ -218,6 +218,7 @@ textarea{resize:vertical}
         <button class="vtab" id="tab-annual" onclick="setView('annual')"><i class="ti ti-calendar-month"></i> Vista anual</button>
         <button class="vtab" id="tab-lines" onclick="setView('lines')"><i class="ti ti-list"></i> Líneas</button>
         <button class="vtab" id="tab-req" onclick="setView('req')"><i class="ti ti-checklist"></i> Requerimientos</button>
+        <button class="vtab" id="tab-fort" onclick="setView('fort')"><i class="ti ti-school"></i> Fortalecimiento</button>
       </div>
     </div>
     <div style="display:flex;gap:10px;align-items:center">
@@ -264,10 +265,13 @@ textarea{resize:vertical}
           <span class="calmonth" id="cal-label"></span>
         </div>
         <div class="modrow">
-          <span style="font-size:11px;color:var(--t3)">Modalidad:</span>
-          <div class="mchip on" onclick="setMod('',this)">Todas</div>
-          <div class="mchip" onclick="setMod('presencial',this)">Presencial</div>
-          <div class="mchip" onclick="setMod('virtual',this)">Virtual</div>
+          <span style="font-size:11px;color:var(--t3)">Año:</span>
+          <div class="mchip ychip on" data-y="2026" onclick="setAnio(2026)">2026</div>
+          <div class="mchip ychip" data-y="2027" onclick="setAnio(2027)">2027</div>
+          <span style="font-size:11px;color:var(--t3);margin-left:8px">Modalidad:</span>
+          <div class="mchip modchip on" onclick="setMod('',this)">Todas</div>
+          <div class="mchip modchip" onclick="setMod('presencial',this)">Presencial</div>
+          <div class="mchip modchip" onclick="setMod('virtual',this)">Virtual</div>
         </div>
       </div>
       <div class="calscroll">
@@ -287,7 +291,7 @@ textarea{resize:vertical}
   <!-- VISTA ANUAL -->
   <div id="view-annual" class="fullview">
     <div style="padding:14px 16px;background:var(--surface);border-bottom:0.5px solid var(--border);flex-shrink:0">
-      <span style="font-family:var(--serif);font-size:16px;color:var(--apc-blue)">2026 — Vista anual</span>
+      <span style="font-family:var(--serif);font-size:16px;color:var(--apc-blue)" id="annual-title">2026 — Vista anual</span>
     </div>
     <div class="annual-scroll">
       <div class="annual-grid" id="annual-grid"></div>
@@ -378,6 +382,27 @@ textarea{resize:vertical}
       </div>
     </div>
   </div>
+
+  <!-- VISTA FORTALECIMIENTO DE CAPACIDADES -->
+  <div id="view-fort" class="fullview">
+    <div style="padding:14px 16px;background:var(--surface);border-bottom:0.5px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:space-between">
+      <span style="font-family:var(--serif);font-size:16px;color:var(--apc-blue)">Fortalecimiento de capacidades</span>
+      <button class="btn-xl" onclick="exportFort()"><i class="ti ti-file-spreadsheet"></i> Descargar Excel</button>
+    </div>
+    <div class="req-wrap">
+      <div class="req-sec">
+        <div class="req-hdr">
+          <div class="req-icon" style="background:#E1F5EE;color:#085041"><i class="ti ti-school"></i></div>
+          <span class="req-title">Actividades de fortalecimiento de capacidades</span>
+          <span class="req-cnt" id="cnt-fort2">0</span>
+        </div>
+        <table class="rtbl">
+          <thead><tr><th>Evento</th><th>Subtipo</th><th>Fecha(s)</th><th>Plan(es)</th><th>Estado</th><th>Participantes</th><th>Departamentos</th></tr></thead>
+          <tbody id="body-fort2"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- FORM -->
@@ -441,7 +466,7 @@ textarea{resize:vertical}
       </div>
       <div class="field">
         <label class="flbl">Estado <span class="req">*</span></label>
-        <select id="f-estado">
+        <select id="f-estado" onchange="checkFortSeguimiento()">
           <option value="">Seleccionar...</option>
           <option>Confirmada</option>
           <option>Por confirmar</option>
@@ -520,6 +545,35 @@ textarea{resize:vertical}
       <div class="field full">
         <label class="flbl">Observaciones</label>
         <textarea id="f-obs" rows="2" placeholder="Notas adicionales"></textarea>
+      </div>
+      <div class="field full" id="wrap-fort-seguimiento" style="display:none">
+        <div style="border-top:1px solid var(--apc-gold);padding-top:12px;margin-top:2px">
+          <div style="font-size:12px;font-weight:600;color:var(--apc-blue);margin-bottom:10px">Seguimiento de fortalecimiento de capacidades</div>
+        </div>
+      </div>
+      <div class="field" id="wrap-fort-partic" style="display:none">
+        <label class="flbl">Número de participantes</label>
+        <input type="number" id="f-fort-partic" min="0" placeholder="Número">
+      </div>
+      <div class="field full relwrap" id="wrap-fort-deptos" style="display:none">
+        <label class="flbl">Departamentos participantes</label>
+        <div class="mbox" id="fort-deptos-box" onclick="document.getElementById('fort-deptos-input').focus()">
+          <div id="fort-deptos-tags" style="display:contents"></div>
+          <input class="minput" id="fort-deptos-input" placeholder="Buscar departamento..." oninput="renderFortDeptosDrop()" onfocus="openFortDeptosDrop()" autocomplete="off">
+        </div>
+        <div class="mdrop" id="fort-deptos-drop"></div>
+      </div>
+      <div class="field full relwrap" id="wrap-fort-actores" style="display:none">
+        <label class="flbl">Tipo de actor participante</label>
+        <div class="mbox" id="fort-actores-box" onclick="document.getElementById('fort-actores-input').focus()">
+          <div id="fort-actores-tags" style="display:contents"></div>
+          <input class="minput" id="fort-actores-input" placeholder="Buscar tipo de actor..." oninput="renderFortActoresDrop()" onfocus="openFortActoresDrop()" autocomplete="off">
+        </div>
+        <div class="mdrop" id="fort-actores-drop"></div>
+      </div>
+      <div class="field full" id="wrap-fort-evidencias" style="display:none">
+        <label class="flbl">Subir evidencias</label>
+        <a href="https://bit.ly/3RAaBWj" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:7px;padding:8px 12px;border:0.5px solid var(--border);border-radius:var(--r8);color:var(--apc-blue);font-size:12px;text-decoration:none;background:var(--apc-blue-light)"><i class="ti ti-upload"></i> Subir evidencias (Drive)</a>
       </div>
     </div>
     <div class="factions">
@@ -664,7 +718,9 @@ const LINEAS = [
   {k:'cup',l:'Cupo fiscal',c:'#888780',ec:'ec-cup',bc:'b-cup'},
   {k:'edg',l:'Eventos Dirección General',c:'#D4537E',ec:'ec-edg',bc:'b-edg'}
 ];
-const HEADERS = ['ID','Linea','Tipo','Subtipo','PlanTipo','PlanNombre','Modalidad','Nombre','Desc','FechaIni','FechaFin','Fechas','Responsable','Comms','Comision','ComCiudad','ComViajan','ComTotal','ComFuncionarios','ComContratistas','ComPasantes','Partic','RecursosOperador','RecDesc','DirDCI','DirGral','Estado','Obs'];
+const HEADERS = ['ID','Linea','Tipo','Subtipo','PlanTipo','PlanNombre','Modalidad','Nombre','Desc','FechaIni','FechaFin','Fechas','Responsable','Comms','Comision','ComCiudad','ComViajan','ComTotal','ComFuncionarios','ComContratistas','ComPasantes','Partic','RecursosOperador','RecDesc','DirDCI','DirGral','Estado','Obs','FortPartic','FortDeptos','FortActores'];
+const DEPTOS_CO = ['Amazonas','Antioquia','Arauca','Atlántico','Bogotá D.C.','Bolívar','Boyacá','Caldas','Caquetá','Casanare','Cauca','Cesar','Chocó','Córdoba','Cundinamarca','Guainía','Guaviare','Huila','La Guajira','Magdalena','Meta','Nariño','Norte de Santander','Putumayo','Quindío','Risaralda','San Andrés y Providencia','Santander','Sucre','Tolima','Valle del Cauca','Vaupés','Vichada'];
+const ACTORES_FORT = ['Sector público nacional','Sector público territorial','Organizaciones de la sociedad civil','Sector privado','Cámaras, Federaciones y/o gremios','Empresas de economía mixta','Academia','Región administrativa y de planificación RAP','Cooperantes','Otros'];
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbztgoeOWSPKxq9ZTuUFui_t2-uUla3PkkWmBs-MjXJ7qUJpfZGKJqa7gwNRey9xcsCrvw/exec';
 
 let eventos=[], filtrados=[];
@@ -673,8 +729,9 @@ let filEstados=new Set(['Realizada','Confirmada','Por confirmar']);
 let filMod='',filResp='',filPlan='';
 let abiertos=new Set();
 let mes=new Date().getMonth();
+let anio=Math.max(2026,Math.min(2027,new Date().getFullYear()));
 let editId=null, token=null;
-let selResps=[], selPlanes=[], selFechas=[], selViajan=[];
+let selResps=[], selPlanes=[], selFechas=[], selViajan=[], selFortDeptos=[], selFortActores=[];
 
 function getLinea(label){ return LINEAS.find(l=>l.l===label)||LINEAS[4]; }
 function fmt(d){ if(!d)return''; const p=d.split('-'); return p.length<3?d:p[2]+'/'+p[1]; }
@@ -747,7 +804,10 @@ function parseRow(row){
     dirDCI:isLatest?(row[24]||'no'):'no',
     dirGral:isLatest?(row[25]||'no'):'no',
     estado:isLatest?(row[26]||''):isStd?(row[24]||''):isMid?(row[21]||''):(row[18]||''),
-    obs:isLatest?(row[27]||''):isStd?(row[25]||''):isMid?(row[22]||''):(row[19]||'')
+    obs:isLatest?(row[27]||''):isStd?(row[25]||''):isMid?(row[22]||''):(row[19]||''),
+    fortPartic:row[28]||'',
+    fortDeptos:row[29]||'',
+    fortActores:row[30]||''
   };
 }
 
@@ -803,7 +863,8 @@ function makeRow(e){
   return [e.id,e.linea,e.tipo,e.subtipo,e.planTipo,e.planNombre,e.modalidad,e.nombre,e.desc,
     e.fechaIni,e.fechaFin,e.fechas,e.responsable,e.comms,e.comision,
     e.comCiudad||'',e.comViajan||'',t.total||'',t.funcionarios||'',t.contratistas||'',t.pasantes||'',
-    e.partic,e.recursosAPC,e.recDesc,e.dirDCI||'no',e.dirGral||'no',e.estado,e.obs];
+    e.partic,e.recursosAPC,e.recDesc,e.dirDCI||'no',e.dirGral||'no',e.estado,e.obs,
+    e.fortPartic||'',e.fortDeptos||'',e.fortActores||''];
 }
 
 async function callAppsScript(dataObj){
@@ -881,7 +942,7 @@ function toggleEstado(s){
   }
   buildAccordion();applyFilters();
 }
-function setMod(m,el){ filMod=m;document.querySelectorAll('.mchip').forEach(c=>c.classList.remove('on'));el.classList.add('on');applyFilters(); }
+function setMod(m,el){ filMod=m;document.querySelectorAll('.modchip').forEach(c=>c.classList.remove('on'));el.classList.add('on');applyFilters(); }
 
 function applyFilters(){
   filResp=document.getElementById('fil-resp').value;
@@ -902,20 +963,20 @@ function applyFilters(){
 }
 
 function renderCal(){
-  document.getElementById('cal-label').textContent=MESES[mes]+' 2026';
+  document.getElementById('cal-label').textContent=MESES[mes]+' '+anio;
   const grid=document.getElementById('calgrid');grid.innerHTML='';
-  const first=new Date(2026,mes,1);let dow=first.getDay();dow=dow===0?6:dow-1;
-  const dim=new Date(2026,mes+1,0).getDate(),prev=new Date(2026,mes,0).getDate();
+  const first=new Date(anio,mes,1);let dow=first.getDay();dow=dow===0?6:dow-1;
+  const dim=new Date(anio,mes+1,0).getDate(),prev=new Date(anio,mes,0).getDate();
   const today=new Date();const cells=[];
   for(let i=dow-1;i>=0;i--)cells.push({d:prev-i,cur:false});
   for(let d=1;d<=dim;d++)cells.push({d,cur:true});
   while(cells.length%7!==0)cells.push({d:cells.length-dow-dim+1,cur:false});
   cells.forEach(cell=>{
     const div=document.createElement('div');div.className='cd'+(cell.cur?'':' other');
-    if(cell.cur&&cell.d===today.getDate()&&mes===today.getMonth()&&2026===today.getFullYear())div.classList.add('today');
+    if(cell.cur&&cell.d===today.getDate()&&mes===today.getMonth()&&anio===today.getFullYear())div.classList.add('today');
     const dn=document.createElement('div');dn.className='dn';dn.textContent=cell.d;div.appendChild(dn);
     if(cell.cur){
-      const ds='2026-'+String(mes+1).padStart(2,'0')+'-'+String(cell.d).padStart(2,'0');
+      const ds=anio+'-'+String(mes+1).padStart(2,'0')+'-'+String(cell.d).padStart(2,'0');
       const day=filtrados.filter(e=>{if(!e.fechaIni)return false;if(e.fechas)return e.fechas.split('|').includes(ds);return ds>=e.fechaIni&&ds<=(e.fechaFin||e.fechaIni);});
       day.slice(0,2).forEach(ev=>{const chip=document.createElement('span');chip.className='ec '+getLinea(ev.linea).ec;chip.textContent=ev.nombre;chip.onclick=()=>showDetail(ev);div.appendChild(chip);});
       if(day.length>2){
@@ -931,6 +992,7 @@ function renderCal(){
 }
 
 function renderAnnual(){
+  const at=document.getElementById('annual-title');if(at)at.textContent=anio+' — Vista anual';
   const grid=document.getElementById('annual-grid');grid.innerHTML='';
   const today=new Date();
   for(let m=0;m<12;m++){
@@ -940,18 +1002,18 @@ function renderAnnual(){
     ['L','M','X','J','V','S','D'].forEach(d=>{const el=document.createElement('div');el.className='mini-wl';el.textContent=d;whdr.appendChild(el);});
     wrap.appendChild(whdr);
     const g=document.createElement('div');g.className='mini-grid';
-    const first=new Date(2026,m,1);let dow=first.getDay();dow=dow===0?6:dow-1;
-    const dim=new Date(2026,m+1,0).getDate(),prev=new Date(2026,m,0).getDate();
+    const first=new Date(anio,m,1);let dow=first.getDay();dow=dow===0?6:dow-1;
+    const dim=new Date(anio,m+1,0).getDate(),prev=new Date(anio,m,0).getDate();
     const cells=[];
     for(let i=dow-1;i>=0;i--)cells.push({d:prev-i,cur:false});
     for(let d=1;d<=dim;d++)cells.push({d,cur:true});
     while(cells.length%7!==0)cells.push({d:cells.length-dow-dim+1,cur:false});
     cells.forEach(cell=>{
       const div=document.createElement('div');div.className='mini-cd'+(cell.cur?'':' other');
-      if(cell.cur&&cell.d===today.getDate()&&m===today.getMonth()&&2026===today.getFullYear())div.classList.add('today');
+      if(cell.cur&&cell.d===today.getDate()&&m===today.getMonth()&&anio===today.getFullYear())div.classList.add('today');
       const dn=document.createElement('div');dn.className='mini-dn';dn.textContent=cell.d;div.appendChild(dn);
       if(cell.cur){
-        const ds='2026-'+String(m+1).padStart(2,'0')+'-'+String(cell.d).padStart(2,'0');
+        const ds=anio+'-'+String(m+1).padStart(2,'0')+'-'+String(cell.d).padStart(2,'0');
         const day=filtrados.filter(e=>{if(!e.fechaIni)return false;if(e.fechas)return e.fechas.split('|').includes(ds);return ds>=e.fechaIni&&ds<=(e.fechaFin||e.fechaIni);});
         day.slice(0,3).forEach(ev=>{const bar=document.createElement('div');bar.className='mini-ec';bar.style.background=getLinea(ev.linea).c;bar.title=ev.nombre;bar.onclick=()=>{setView('cal');mes=m;renderCal();showDetail(ev);};div.appendChild(bar);});
       }
@@ -1035,6 +1097,17 @@ function renderLines(){
   });
 }
 
+function renderFort(){
+  const evs=eventos.filter(e=>e.tipo==='Fortalecimiento de capacidades').sort((a,b)=>(a.fechaIni||'').localeCompare(b.fechaIni||''));
+  const cnt=document.getElementById('cnt-fort2');const body=document.getElementById('body-fort2');
+  if(!body||!cnt)return;
+  cnt.textContent=evs.length;
+  body.innerHTML=evs.length?evs.map(e=>{
+    const deptos=e.fortDeptos?e.fortDeptos.split('|').filter(Boolean).join(', '):'—';
+    return '<tr style="cursor:pointer" onclick="showDetailModal(eventos.find(x=>x.id===\''+e.id+'\'))"><td>'+e.nombre+'</td><td>'+(e.subtipo||'—')+'</td><td>'+fmtFechas(e)+'</td><td>'+(e.planNombre?e.planNombre.split('|').join(', '):'—')+'</td><td>'+estadoPill(e.estado||'Confirmada')+'</td><td>'+(e.fortPartic||'—')+'</td><td>'+deptos+'</td></tr>';
+  }).join(''):'<tr><td colspan="7" style="text-align:center;color:var(--t3);font-style:italic;padding:20px">Sin actividades registradas</td></tr>';
+}
+
 function renderReq(){
   const cl=e=>'style="cursor:pointer" onclick="showDetailModal(eventos.find(x=>x.id===\'' + e.id + '\'))"';
   const ep=e=>estadoPill(e.estado||'Confirmada');
@@ -1063,18 +1136,22 @@ function renderReq(){
 
 // ── VIEWS ──
 function setView(v){
-  ['cal','annual','lines','req'].forEach(id=>document.getElementById('tab-'+id).classList.toggle('on',v===id));
+  ['cal','annual','lines','req','fort'].forEach(id=>document.getElementById('tab-'+id).classList.toggle('on',v===id));
   document.getElementById('view-main').style.display=v==='cal'?'flex':'none';
   document.getElementById('view-annual').classList.toggle('active',v==='annual');
   document.getElementById('view-lines').classList.toggle('active',v==='lines');
   document.getElementById('view-req').classList.toggle('active',v==='req');
+  document.getElementById('view-fort').classList.toggle('active',v==='fort');
   if(v==='annual')renderAnnual();
   if(v==='lines')renderLines();
   if(v==='req')renderReq();
+  if(v==='fort')renderFort();
 }
 
-function prevMes(){ mes--;if(mes<0)mes=11;renderCal(); }
-function nextMes(){ mes++;if(mes>11)mes=0;renderCal(); }
+function prevMes(){ mes--;if(mes<0){if(anio>2026){anio--;mes=11;}else mes=0;syncYearTabs();}renderCal(); }
+function nextMes(){ mes++;if(mes>11){if(anio<2027){anio++;mes=0;}else mes=11;syncYearTabs();}renderCal(); }
+function setAnio(a){ anio=a;syncYearTabs();renderCal();const av=document.getElementById('view-annual');if(av&&av.classList.contains('active'))renderAnnual();const at=document.getElementById('annual-title');if(at)at.textContent=anio+' — Vista anual'; }
+function syncYearTabs(){ document.querySelectorAll('.ychip').forEach(el=>el.classList.toggle('on',parseInt(el.dataset.y)===anio)); }
 
 // ── DETAIL ──
 function showDetail(ev){
@@ -1239,9 +1316,36 @@ function exportReq(){
   XLSX.writeFile(wb, 'requerimientos-sncic-2026.xlsx');
 }
 
+function exportFort(){
+  const wb = XLSX.utils.book_new();
+  const cols = ['Nombre del evento','Subtipo','Fecha(s)','Modalidad','Plan(es) de trabajo','Responsable(s)','Estado','N° participantes','Departamentos participantes','Tipo de actor participante','Descripción','Observaciones'];
+  const evs = eventos.filter(e=>e.tipo==='Fortalecimiento de capacidades').sort((a,b)=>(a.fechaIni||'').localeCompare(b.fechaIni||''));
+  const rows = evs.map(e=>[
+    e.nombre||'', e.subtipo||'', fmtFechas(e), e.modalidad||'',
+    e.planNombre?e.planNombre.split('|').join('; '):'',
+    e.responsable||'', e.estado||'',
+    e.fortPartic||'',
+    e.fortDeptos?e.fortDeptos.split('|').join('; '):'',
+    e.fortActores?e.fortActores.split('|').join('; '):'',
+    e.desc||'', e.obs||''
+  ]);
+  const ws = XLSX.utils.aoa_to_sheet([cols, ...rows]);
+  ws['!cols'] = cols.map((_,i)=>({wch: i===0||i===8||i===9?35: i===10?40: 20}));
+  XLSX.utils.book_append_sheet(wb, ws, 'Fortalecimiento');
+  XLSX.writeFile(wb, 'fortalecimiento-capacidades-sncic.xlsx');
+}
+
 // ── FORM ──
 function onLineaChange(){ const linea=document.getElementById('f-linea').value;const sel=document.getElementById('f-tipo');sel.innerHTML='<option value="">Seleccionar...</option>';(TIPOS[linea]||[]).forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;sel.appendChild(o);});document.getElementById('wrap-subtipo').style.display='none';document.getElementById('f-subtipo').value=''; }
-function onTipoChange(){ const tipo=document.getElementById('f-tipo').value;document.getElementById('wrap-subtipo').style.display=tipo==='Fortalecimiento de capacidades'?'flex':'none';if(tipo!=='Fortalecimiento de capacidades')document.getElementById('f-subtipo').value=''; }
+function onTipoChange(){ const tipo=document.getElementById('f-tipo').value;document.getElementById('wrap-subtipo').style.display=tipo==='Fortalecimiento de capacidades'?'flex':'none';if(tipo!=='Fortalecimiento de capacidades')document.getElementById('f-subtipo').value='';checkFortSeguimiento(); }
+function checkFortSeguimiento(){
+  const tipo=document.getElementById('f-tipo').value;
+  const estado=document.getElementById('f-estado').value;
+  const show = tipo==='Fortalecimiento de capacidades' && estado==='Realizada';
+  ['wrap-fort-seguimiento','wrap-fort-partic','wrap-fort-deptos','wrap-fort-actores','wrap-fort-evidencias'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.style.display = show ? (id==='wrap-fort-partic'?'flex':'flex') : 'none';
+  });
+}
 function onPlanTypeChange(){ const tipo=document.getElementById('f-plantype').value;const wrap=document.getElementById('wrap-planes');const pick=document.getElementById('f-plan-pick');if(!tipo||tipo==='NA'){wrap.style.display='none';selPlanes=[];renderPlanTags();return;}wrap.style.display='flex';pick.innerHTML='<option value="">Seleccionar...</option>';(tipo==='Territorial'?TERR:SECT).forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=p;pick.appendChild(o);}); }
 function onComisionChange(){
   const v=document.getElementById('f-comision').value;
@@ -1268,6 +1372,10 @@ document.addEventListener('click',e=>{
   if(box&&drop&&!box.contains(e.target)&&!drop.contains(e.target))drop.classList.remove('open');
   const vbox=document.getElementById('viajan-box');const vdrop=document.getElementById('viajan-drop');
   if(vbox&&vdrop&&!vbox.contains(e.target)&&!vdrop.contains(e.target))vdrop.classList.remove('open');
+  const dbox=document.getElementById('fort-deptos-box');const ddrop=document.getElementById('fort-deptos-drop');
+  if(dbox&&ddrop&&!dbox.contains(e.target)&&!ddrop.contains(e.target))ddrop.classList.remove('open');
+  const abox=document.getElementById('fort-actores-box');const adrop=document.getElementById('fort-actores-drop');
+  if(abox&&adrop&&!abox.contains(e.target)&&!adrop.contains(e.target))adrop.classList.remove('open');
 });
 
 function openViajanDrop(){ renderViajanDrop(); document.getElementById('viajan-drop').classList.add('open'); }
@@ -1322,15 +1430,79 @@ function renderViajanTags(){
   }
 }
 
+function openFortDeptosDrop(){ renderFortDeptosDrop(); document.getElementById('fort-deptos-drop').classList.add('open'); }
+function renderFortDeptosDrop(){
+  const q=document.getElementById('fort-deptos-input').value.toLowerCase();
+  const drop=document.getElementById('fort-deptos-drop');
+  const filtered=DEPTOS_CO.filter(d=>d.toLowerCase().includes(q));
+  drop.innerHTML='';
+  filtered.forEach(d=>{
+    const div=document.createElement('div');div.className='mopt'+(selFortDeptos.includes(d)?' sel':'');
+    const ic=document.createElement('i');ic.className='ti '+(selFortDeptos.includes(d)?'ti-check':'ti-map-pin');
+    div.appendChild(ic);div.appendChild(document.createTextNode(d));
+    div.onmousedown=e=>{e.preventDefault();toggleFortDepto(d);};
+    drop.appendChild(div);
+  });
+  if(!filtered.length)drop.innerHTML='<div style="padding:8px 10px;font-size:12px;color:var(--t3)">Sin resultados</div>';
+}
+function toggleFortDepto(d){
+  if(selFortDeptos.includes(d))selFortDeptos=selFortDeptos.filter(x=>x!==d);else selFortDeptos.push(d);
+  renderFortDeptosTags();renderFortDeptosDrop();
+  document.getElementById('fort-deptos-input').value='';document.getElementById('fort-deptos-input').focus();
+}
+function renderFortDeptosTags(){
+  const wrap=document.getElementById('fort-deptos-tags');if(!wrap)return;
+  wrap.innerHTML='';
+  selFortDeptos.forEach(d=>{
+    const sp=document.createElement('span');sp.className='chip-plan';sp.textContent=d;
+    const btn=document.createElement('button');btn.type='button';btn.className='chip-x';btn.textContent='×';
+    btn.onmousedown=e=>{e.preventDefault();toggleFortDepto(d);};
+    sp.appendChild(btn);wrap.appendChild(sp);
+  });
+}
+
+function openFortActoresDrop(){ renderFortActoresDrop(); document.getElementById('fort-actores-drop').classList.add('open'); }
+function renderFortActoresDrop(){
+  const q=document.getElementById('fort-actores-input').value.toLowerCase();
+  const drop=document.getElementById('fort-actores-drop');
+  const filtered=ACTORES_FORT.filter(a=>a.toLowerCase().includes(q));
+  drop.innerHTML='';
+  filtered.forEach(a=>{
+    const div=document.createElement('div');div.className='mopt'+(selFortActores.includes(a)?' sel':'');
+    const ic=document.createElement('i');ic.className='ti '+(selFortActores.includes(a)?'ti-check':'ti-users');
+    div.appendChild(ic);div.appendChild(document.createTextNode(a));
+    div.onmousedown=e=>{e.preventDefault();toggleFortActor(a);};
+    drop.appendChild(div);
+  });
+  if(!filtered.length)drop.innerHTML='<div style="padding:8px 10px;font-size:12px;color:var(--t3)">Sin resultados</div>';
+}
+function toggleFortActor(a){
+  if(selFortActores.includes(a))selFortActores=selFortActores.filter(x=>x!==a);else selFortActores.push(a);
+  renderFortActoresTags();renderFortActoresDrop();
+  document.getElementById('fort-actores-input').value='';document.getElementById('fort-actores-input').focus();
+}
+function renderFortActoresTags(){
+  const wrap=document.getElementById('fort-actores-tags');if(!wrap)return;
+  wrap.innerHTML='';
+  selFortActores.forEach(a=>{
+    const sp=document.createElement('span');sp.className='chip-resp';sp.textContent=a;
+    const btn=document.createElement('button');btn.type='button';btn.className='chip-x';btn.textContent='×';
+    btn.onmousedown=e=>{e.preventDefault();toggleFortActor(a);};
+    sp.appendChild(btn);wrap.appendChild(sp);
+  });
+}
+
 function resetForm(){
   ['f-linea','f-tipo','f-subtipo','f-plantype','f-modalidad','f-estado','f-comms','f-comision','f-recursos'].forEach(id=>{const el=document.getElementById(id);if(el)el.selectedIndex=0;});
-  ['f-nombre','f-desc','f-fecha-pick','f-partic','f-com-ciudad','f-rec-desc','f-obs'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['f-nombre','f-desc','f-fecha-pick','f-partic','f-com-ciudad','f-rec-desc','f-obs','f-fort-partic'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   const dDci=document.getElementById('f-dir-dci');if(dDci)dDci.value='no';
-  const dGral=document.getElementById('f-dir-gral');if(dGral)dGral.value='no';;
-  selResps=[];selPlanes=[];selFechas=[];selViajan=[];
-  renderRespTags();renderPlanTags();renderFechaTags();renderViajanTags();
+  const dGral=document.getElementById('f-dir-gral');if(dGral)dGral.value='no';
+  selResps=[];selPlanes=[];selFechas=[];selViajan=[];selFortDeptos=[];selFortActores=[];
+  renderRespTags();renderPlanTags();renderFechaTags();renderViajanTags();renderFortDeptosTags();renderFortActoresTags();
   document.getElementById('resp-input').value='';
-  ['wrap-subtipo','wrap-planes','wrap-recursos','wrap-com-ciudad','wrap-com-quienes'].forEach(id=>document.getElementById(id).style.display='none');
+  const fdi=document.getElementById('fort-deptos-input');if(fdi)fdi.value='';
+  const fai=document.getElementById('fort-actores-input');if(fai)fai.value='';
+  ['wrap-subtipo','wrap-planes','wrap-recursos','wrap-com-ciudad','wrap-com-quienes','wrap-fort-seguimiento','wrap-fort-partic','wrap-fort-deptos','wrap-fort-actores','wrap-fort-evidencias'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
   document.getElementById('cc-nombre').textContent='0 / 350';
   document.getElementById('cc-desc').textContent='0 / 700';
 }
@@ -1364,6 +1536,10 @@ function editEvento(id){
     document.getElementById('f-dir-dci').value=ev.dirDCI||'no';
     document.getElementById('f-dir-gral').value=ev.dirGral||'no';
     document.getElementById('f-obs').value=ev.obs||'';
+    document.getElementById('f-fort-partic').value=ev.fortPartic||'';
+    selFortDeptos=ev.fortDeptos?ev.fortDeptos.split('|').filter(Boolean):[];renderFortDeptosTags();
+    selFortActores=ev.fortActores?ev.fortActores.split('|').filter(Boolean):[];renderFortActoresTags();
+    setTimeout(checkFortSeguimiento,120);
   },80);
 }
 
@@ -1406,7 +1582,10 @@ async function saveEvent(){
     dirDCI:document.getElementById('f-dir-dci').value,
     dirGral:document.getElementById('f-dir-gral').value,
     estado:document.getElementById('f-estado').value,
-    obs:document.getElementById('f-obs').value
+    obs:document.getElementById('f-obs').value,
+    fortPartic:document.getElementById('f-fort-partic').value,
+    fortDeptos:selFortDeptos.join('|'),
+    fortActores:selFortActores.join('|')
   };
   try{localStorage.setItem('sncic_ev',JSON.stringify(eventos));}catch(ex){}
   btn.disabled=false;btn.innerHTML='<i class="ti ti-device-floppy"></i> Guardar';
@@ -1444,23 +1623,7 @@ setInterval(async ()=>{
     if(!resp||resp.status!=='ok') return;
     const rows=(resp.values||[]).slice(1);
     if(rows.length===0) return;
-    const fresh=rows.map(row=>{
-      const len=row.length;
-      const isNew=len>=24;const isMid=!isNew&&len>=21;
-      return {
-        id:row[0]||'',linea:row[1]||'',tipo:row[2]||'',subtipo:row[3]||'',
-        planTipo:row[4]||'',planNombre:row[5]||'',modalidad:row[6]||'',nombre:row[7]||'',
-        desc:row[8]||'',fechaIni:row[9]||'',fechaFin:row[10]||'',fechas:row[11]||'',
-        responsable:row[12]||'',comms:row[13]||'',comision:row[14]||'',
-        comCiudad:isNew?(row[15]||''):'',comViajan:isNew?(row[16]||''):'',
-        partic:isNew?(row[21]||''):isMid?(row[18]||''):(row[15]||''),
-        recursosAPC:isNew?(row[22]||''):isMid?(row[19]||''):(row[16]||''),
-        recDesc:isNew?(row[23]||''):isMid?(row[20]||''):(row[17]||''),
-        dirDCI:isNew?(row[24]||'no'):'no',dirGral:isNew?(row[25]||'no'):'no',
-        estado:isNew?(row[26]||''):isMid?(row[21]||''):(row[18]||''),
-        obs:isNew?(row[27]||''):isMid?(row[22]||''):(row[19]||'')
-      };
-    }).filter(e=>e.nombre);
+    const fresh=rows.map(parseRow).filter(e=>e.nombre);
     // Only update if count changed or any id is new
     const currentIds=new Set(eventos.map(e=>e.id));
     const hasNew=fresh.some(e=>!currentIds.has(e.id));
